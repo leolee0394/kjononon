@@ -734,73 +734,47 @@ function renderFunding(data,vc){
 }
 
 function renderGeoMap(data,vc){
-  const geoCoords={
-    'US':{x:180,y:175,label:'United States'},'USA':{x:180,y:175,label:'United States'},
-    'UK':{x:435,y:110,label:'UK'},'United Kingdom':{x:435,y:110,label:'UK'},
-    'France':{x:450,y:130,label:'France'},'Ireland':{x:415,y:108,label:'Ireland'},
-    'Israel':{x:500,y:158,label:'Israel'},'Switzerland':{x:455,y:122,label:'Switzerland'},
-    'Sweden':{x:468,y:90,label:'Sweden'},'Singapore':{x:635,y:228,label:'Singapore'},
-    'Germany':{x:460,y:112,label:'Germany'},'Canada':{x:175,y:120,label:'Canada'},
-    'Australia':{x:675,y:285,label:'Australia'},'India':{x:580,y:190,label:'India'},
-    'China':{x:638,y:155,label:'China'},'Japan':{x:690,y:148,label:'Japan'}
+  // Real lat/lon projected onto the actual world map image (worldmap.png must
+  // sit alongside index.html/app.js). Projection is calibrated to that image:
+  // x = (180 - lon) / 360 * W   (map's left edge is the Pacific split, ~lon +180)
+  // y = (LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM) * H
+  const W=1600,H=794,LAT_TOP=83,LAT_BOTTOM=-58;
+  const proj=(lat,lon)=>({x:(180-lon)/360*W, y:(LAT_TOP-lat)/(LAT_TOP-LAT_BOTTOM)*H});
+  const geo={
+    'US':{lat:39.8,lon:-98.6,label:'United States'},'USA':{lat:39.8,lon:-98.6,label:'United States'},'United States':{lat:39.8,lon:-98.6,label:'United States'},
+    'UK':{lat:54.0,lon:-2.0,label:'UK'},'United Kingdom':{lat:54.0,lon:-2.0,label:'UK'},
+    'France':{lat:46.6,lon:2.2,label:'France'},'Ireland':{lat:53.1,lon:-8.0,label:'Ireland'},
+    'Israel':{lat:31.0,lon:34.8,label:'Israel'},'Switzerland':{lat:46.8,lon:8.2,label:'Switzerland'},
+    'Sweden':{lat:62.0,lon:15.0,label:'Sweden'},'Singapore':{lat:1.35,lon:103.8,label:'Singapore'},
+    'Germany':{lat:51.2,lon:10.4,label:'Germany'},'Canada':{lat:56.1,lon:-106.3,label:'Canada'},
+    'Australia':{lat:-25.3,lon:133.8,label:'Australia'},'India':{lat:22.0,lon:79.0,label:'India'},
+    'China':{lat:35.0,lon:103.8,label:'China'},'Japan':{lat:36.5,lon:138.0,label:'Japan'}
   };
-  const W=880,H=420;
-  const companies=data.filter(r=>r['Geography']&&geoCoords[r['Geography'].trim()]);
+  const companies=data.filter(r=>r['Geography']&&geo[r['Geography'].trim()]);
   const colors={'Precision Nutrition':'#e07535','Intelligent Health':'#2563eb','Food & Medicine':'#16a34a'};
-  // Group companies by location
   const locGroups={};
   companies.forEach(r=>{const g=r['Geography'].trim();if(!locGroups[g])locGroups[g]=[];locGroups[g].push(r);});
 
-  const bubbles=Object.entries(locGroups).map(([geo,comps])=>{
-    const pos=geoCoords[geo];if(!pos)return'';
-    const r=Math.max(16,comps.length*12);
-    // Use first company focus for color, but show count
-    const focus=comps[0]['TMG Focus Area'];
-    const color=colors[focus]||'#888';
+  const bubbles=Object.entries(locGroups).map(([geoKey,comps])=>{
+    const info=geo[geoKey];if(!info)return'';
+    const {x,y}=proj(info.lat,info.lon);
+    const r=Math.max(14,comps.length*11);
     const names=comps.map(c=>c['Company Name']).join(', ');
-    // If multiple focus areas, use a split approach visually
     const focusCounts={};comps.forEach(c=>{focusCounts[c['TMG Focus Area']]=(focusCounts[c['TMG Focus Area']]||0)+1;});
     const dominant=Object.entries(focusCounts).sort((a,b)=>b[1]-a[1])[0][0];
-    return `<circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${colors[dominant]||'#888'}" opacity=".82" stroke="white" stroke-width="2"/><text x="${pos.x}" y="${pos.y+3}" text-anchor="middle" font-size="${r>20?10:9}" fill="white" font-weight="700">${comps.length}</text><text x="${pos.x}" y="${pos.y+r+12}" text-anchor="middle" font-size="8" fill="#4a6070">${pos.label}</text><title>${geo}: ${names}</title>`;
+    return `<circle cx="${x}" cy="${y}" r="${r}" fill="${colors[dominant]||'#888'}" opacity=".85" stroke="white" stroke-width="2"/><text x="${x}" y="${y+3}" text-anchor="middle" font-size="${r>20?10:9}" fill="white" font-weight="700">${comps.length}</text><text x="${x}" y="${y+r+12}" text-anchor="middle" font-size="9" fill="#162535" font-weight="600" style="paint-order:stroke;stroke:white;stroke-width:3px">${info.label}</text><title>${geoKey}: ${names}</title>`;
   }).join('');
 
-  // Simple flat map background with labeled regions
+  const missing=[...new Set(data.filter(r=>r['Geography']&&!geo[r['Geography'].trim()]).map(r=>r['Geography'].trim()))];
+
   vc.innerHTML=`<div class="vis-card">
     <div class="vis-card-hdr"><span class="vis-card-title">Geographic Map</span><button class="btn-dl-vis" onclick="dlVis('geo-inner')">Download PNG</button></div>
-    <div class="vis-card-desc">Company HQs plotted geographically. Bubble size = number of companies in that location.</div>
-    <div id="geo-inner" style="background:#ddeeff;border-radius:7px;overflow:hidden">
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
-        <!-- Ocean background -->
-        <rect width="${W}" height="${H}" fill="#c8dff0"/>
-        <!-- Landmasses - simplified but recognisable -->
-        <!-- North America -->
-        <path d="M60,60 L70,50 L120,45 L165,52 L200,65 L230,80 L245,100 L250,130 L240,160 L220,180 L195,195 L170,200 L145,195 L120,185 L95,170 L75,150 L60,125 L50,95 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Central America -->
-        <path d="M195,195 L205,210 L210,235 L205,250 L195,245 L188,225 L185,205 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- South America -->
-        <path d="M200,255 L220,248 L248,258 L262,280 L268,310 L260,340 L240,360 L215,365 L195,352 L182,325 L178,295 L183,268 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Europe -->
-        <path d="M390,55 L410,48 L445,50 L468,60 L480,75 L478,95 L460,105 L440,110 L415,108 L398,98 L385,80 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Scandinavia -->
-        <path d="M430,38 L445,30 L462,32 L472,48 L460,55 L440,52 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Africa -->
-        <path d="M395,115 L420,110 L450,115 L468,130 L475,160 L470,200 L455,235 L435,255 L410,262 L385,252 L368,225 L360,190 L362,158 L372,132 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Middle East -->
-        <path d="M478,100 L505,95 L522,105 L525,125 L510,135 L490,130 L476,118 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Asia (main) -->
-        <path d="M520,45 L560,38 L610,40 L660,48 L705,58 L730,75 L738,100 L725,125 L700,140 L665,148 L625,150 L590,145 L555,135 L525,120 L508,100 L510,72 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- India subcontinent -->
-        <path d="M545,148 L570,145 L590,155 L598,180 L588,208 L568,218 L548,208 L538,182 L538,162 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- SE Asia + Indonesia -->
-        <path d="M625,175 L648,168 L665,178 L668,195 L652,205 L630,200 L618,190 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Japan -->
-        <path d="M688,85 L698,80 L708,88 L705,105 L694,110 L684,102 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Australia -->
-        <path d="M640,270 L678,262 L712,268 L728,285 L730,310 L715,328 L688,335 L660,330 L640,315 L630,295 L632,276 Z" fill="#d4e8c0" stroke="#b0cc90" stroke-width="0.8"/>
-        <!-- Bubbles -->
+    <div class="vis-card-desc">Company HQs plotted on real geography. Bubble size = number of companies at that location.${missing.length?' Not yet mapped: '+missing.join(', ')+' (add lat/lon in renderGeoMap).':''}</div>
+    <div id="geo-inner" style="background:#1a7fc4;border-radius:7px;overflow:hidden;position:relative">
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+        <image href="./worldmap.png" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
         ${bubbles}
-        <!-- Legend -->
-        <rect x="10" y="${H-58}" width="215" height="52" fill="white" opacity=".88" rx="5"/>
+        <rect x="10" y="${H-58}" width="215" height="52" fill="white" opacity=".9" rx="5"/>
         <circle cx="24" cy="${H-42}" r="7" fill="#e07535" opacity=".9"/><text x="36" y="${H-38}" font-size="9" fill="#333">Precision Nutrition</text>
         <circle cx="24" cy="${H-24}" r="7" fill="#2563eb" opacity=".9"/><text x="36" y="${H-20}" font-size="9" fill="#333">Intelligent Health</text>
         <circle cx="128" cy="${H-42}" r="7" fill="#16a34a" opacity=".9"/><text x="140" y="${H-38}" font-size="9" fill="#333">Food and Medicine</text>
@@ -809,7 +783,6 @@ function renderGeoMap(data,vc){
     </div>
   </div>`;
 }
-
 function renderArchitecture(data,vc){
   vc.innerHTML=`<div class="vis-card"><div class="vis-card-hdr"><span class="vis-card-title">Platform Architecture</span><button class="btn-dl-vis" onclick="dlVis('arch-inner')">Download PNG</button></div><div class="vis-card-desc">How data flows from web sources through the platform to deliver investment intelligence.</div><div id="arch-inner" style="background:var(--white);padding:20px;border-radius:7px"><svg viewBox="0 0 900 320" style="width:100%;height:auto"><defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e07535"/></marker></defs><text x="450" y="22" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#7a9ab0" font-weight="600">DATA SOURCES</text><rect x="40" y="30" width="140" height="52" rx="7" fill="#162535"/><text x="110" y="50" text-anchor="middle" font-family="sans-serif" font-size="10" fill="white" font-weight="500">Startup Website</text><text x="110" y="63" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#7a9ab0">Jina AI Scraper</text><text x="110" y="75" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#e07535">AI fills form</text><rect x="260" y="30" width="140" height="52" rx="7" fill="#162535"/><text x="330" y="50" text-anchor="middle" font-family="sans-serif" font-size="10" fill="white" font-weight="500">LinkedIn Profile</text><text x="330" y="63" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#7a9ab0">Jina AI Reader</text><text x="330" y="75" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#e07535">Founder Pedigree</text><rect x="480" y="30" width="140" height="52" rx="7" fill="#162535"/><text x="550" y="50" text-anchor="middle" font-family="sans-serif" font-size="10" fill="white" font-weight="500">Google Sheet</text><text x="550" y="63" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#7a9ab0">CSV Sync</text><text x="550" y="75" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#e07535">Manual entry</text><line x1="110" y1="82" x2="110" y2="115" stroke="#e07535" stroke-width="1.5"/><line x1="330" y1="82" x2="330" y2="115" stroke="#e07535" stroke-width="1.5"/><line x1="550" y1="82" x2="550" y2="115" stroke="#e07535" stroke-width="1.5"/><line x1="110" y1="115" x2="550" y2="115" stroke="#e07535" stroke-width="1.5"/><line x1="330" y1="115" x2="330" y2="128" stroke="#e07535" stroke-width="1.5" marker-end="url(#arr)"/><rect x="200" y="128" width="260" height="48" rx="8" fill="#ff8000" opacity=".9"/><text x="330" y="149" text-anchor="middle" font-family="sans-serif" font-size="13" fill="white">Firebase Firestore</text><text x="330" y="165" text-anchor="middle" font-family="sans-serif" font-size="9" fill="rgba(255,255,255,.8)">Real-time - Shared across all 5 teammates</text><line x1="230" y1="176" x2="140" y2="210" stroke="#dde4ec" stroke-width="1.2"/><line x1="280" y1="176" x2="320" y2="210" stroke="#dde4ec" stroke-width="1.2"/><line x1="380" y1="176" x2="500" y2="210" stroke="#dde4ec" stroke-width="1.2"/><line x1="430" y1="176" x2="680" y2="210" stroke="#dde4ec" stroke-width="1.2"/><rect x="70" y="210" width="140" height="48" rx="7" fill="#162535"/><text x="140" y="231" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="600">Dashboard Charts</text><text x="140" y="245" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.7)">17 Visual types</text><rect x="250" y="210" width="140" height="48" rx="7" fill="#7a3fd0"/><text x="320" y="231" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="600">AI Analysis</text><text x="320" y="245" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Claude / Gemini</text><rect x="430" y="210" width="140" height="48" rx="7" fill="#2a7f5f"/><text x="500" y="231" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="600">CSV Export</text><text x="500" y="245" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Google Sheets backup</text><rect x="610" y="210" width="140" height="48" rx="7" fill="#e07535"/><text x="680" y="231" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="600">Newsletter PNGs</text><text x="680" y="245" text-anchor="middle" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Visuals tab</text><rect x="210" y="268" width="220" height="34" rx="6" fill="#f0e8fe" stroke="#7a3fd0" stroke-width="1.5"/><text x="320" y="283" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5a1a9a" font-weight="600">Send to Claude connector</text><text x="320" y="296" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#7a3fd0">Query your landscape from Claude chat</text><line x1="320" y1="258" x2="320" y2="268" stroke="#7a3fd0" stroke-width="1.2"/></svg></div></div>`;
 }
@@ -886,20 +859,26 @@ function selPrompt(btn,type){document.querySelectorAll('.ai-panel .ai-opt').forE
 async function callAI(prompt){
   const provider=document.getElementById('aiProvider')?.value||localStorage.getItem('tmg_provider')||'groq';
 
-  // GROQ - most reliable free option, single stable model
+  // GROQ - most reliable free option. llama-3.3-70b-versatile was deprecated by Groq
+  // (Aug 2026) - gpt-oss-120b is their recommended replacement, with a smaller fallback.
   if(provider==='groq'){
     const key=localStorage.getItem('tmg_groqKey')||document.getElementById('apiKeyInput')?.value.trim();
     if(!key)return'Add your Groq API key in Settings. Free at console.groq.com';
-    try{
-      const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:1024})
-      });
-      const d=await r.json();
-      if(d.error)throw new Error(d.error.message);
-      return d.choices?.[0]?.message?.content||'No response.';
-    }catch(e){return'Groq error: '+e.message;}
+    const MODELS=['openai/gpt-oss-120b','openai/gpt-oss-20b'];
+    let lastErr='';
+    for(const m of MODELS){
+      try{
+        const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+          body:JSON.stringify({model:m,messages:[{role:'user',content:prompt}],max_tokens:1024})
+        });
+        const d=await r.json();
+        if(d.error){lastErr=d.error.message;continue;}
+        return d.choices?.[0]?.message?.content||'No response.';
+      }catch(e){lastErr=e.message;continue;}
+    }
+    return'Groq error: '+lastErr;
   }
 
   // GEMINI - free but model names change, try a couple of fallbacks
