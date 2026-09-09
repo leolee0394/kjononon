@@ -1,186 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TMG Portfolio Landscape</title>
-  <!-- Chart.js for Visualizations -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- html2canvas for visual exporting -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent: #e07535;
-      --success: #16a34a;
-      --radius: 8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px; }
-    
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-    h1 { font-size: 1.5rem; font-weight: 700; }
-    .header-actions { display: flex; gap: 10px; align-items: center; }
-
-    .btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; font-weight: 500; font-size: 0.875rem; transition: background 0.2s; }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #white; color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #f1f5f9; }
-
-    .nav-tabs { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-    .tab { padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; color: var(--text-muted); }
-    .tab.active { border-bottom-color: var(--primary); color: var(--primary); }
-
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-
-    .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    input[type="text"], select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; outline: none; }
-    input[type="text"] { flex: 1; min-width: 200px; }
-
-    /* Visualizations Grid */
-    .vis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-    .vis-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-    .vis-card-hdr { display: flex; justify-content: space-between; align-items: center; }
-    .vis-card-title { font-weight: 600; font-size: 1rem; }
-    .vis-card-desc { font-size: 0.8rem; color: var(--text-muted); }
-
-    /* Modals */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-    .modal.open { display: flex; }
-    .modal-content { background: white; border-radius: var(--radius); padding: 24px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; }
-    .modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-
-    /* Table */
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-    th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
-    th { background: #f8fafc; font-weight: 600; }
-
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMG Market Landscape</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#162535;--navy2:#1d3245;--navy3:#2a4560;
+  --orange:#e07535;--orange2:#f08545;--orange-pale:#fef3ec;
+  --ink:#1a2530;--ink-soft:#4a6070;--ink-muted:#7a9ab0;
+  --white:#fff;--slate:#f2f5f8;--border:#dde4ec;
+  --green:#2a7f5f;--green-light:#e0f5ec;
+  --rose:#b85050;--rose-light:#f5e0e0;
+  --purple:#6a3fa0;--purple-light:#f0e8fe;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--slate);color:var(--ink);font-size:14px;line-height:1.6;overflow-x:hidden}
+header{background:var(--navy);height:58px;display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.logo{display:flex;align-items:center;gap:9px;margin-right:6px;text-decoration:none;flex-shrink:0}
+.logo-box{width:30px;height:30px;border:2px solid var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;color:var(--orange);font-size:13px}
+.logo-text{color:var(--white);font-size:12px;font-weight:500;line-height:1.2}
+.logo-sub{color:var(--ink-muted);font-size:9px;font-weight:300}
+nav{display:flex;gap:2px}
+.nav-btn{background:none;border:none;color:#7a9ab0;font-size:11px;font-family:inherit;padding:5px 9px;border-radius:5px;cursor:pointer;font-weight:500;transition:.15s;white-space:nowrap}
+.nav-btn:hover{color:var(--white);background:rgba(255,255,255,.08)}
+.nav-btn.active{color:var(--white);background:var(--orange)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:5px}
+.h-btn{background:none;border:1px solid #2a4560;color:#7a9ab0;padding:5px 9px;border-radius:5px;font-size:11px;font-family:inherit;cursor:pointer;transition:.15s;white-space:nowrap}
+.h-btn:hover{border-color:var(--orange);color:var(--orange)}
+.h-btn.primary{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.h-btn.primary:hover{background:var(--orange2)}
+.h-btn.claude{background:rgba(95,47,155,.3);border-color:#7a3fd0;color:#c4a0f5}
+.h-btn.claude:hover{background:rgba(95,47,155,.5)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#4a6070;flex-shrink:0}
+.sync-dot.live{background:var(--green);animation:pulse 2s infinite}
+.last-upd{font-size:10px;color:#4a6070}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+main{max-width:1360px;margin:0 auto;padding:22px 26px 60px}
+.page-hdr{margin-bottom:18px}
+.page-hdr h1{font-family:'DM Serif Display',serif;font-size:23px;font-weight:400;color:var(--ink)}
+.page-hdr p{font-size:11px;color:var(--ink-soft);margin-top:2px;font-weight:300}
+.view-toggle{display:inline-flex;background:var(--white);border:1px solid var(--border);border-radius:7px;padding:3px;gap:2px;margin-bottom:16px}
+.vt-btn{padding:5px 13px;border-radius:5px;border:none;background:none;font-size:11px;font-weight:500;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:.15s}
+.vt-btn.active{background:var(--navy);color:var(--white)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:14px 18px;border-top:3px solid var(--orange)}
+.stat-card.s2{border-top-color:var(--navy)}.stat-card.s3{border-top-color:var(--green)}.stat-card.s4{border-top-color:var(--rose)}.stat-card.s5{border-top-color:var(--purple)}
+.stat-val{font-family:'DM Serif Display',serif;font-size:30px;color:var(--ink);line-height:1}
+.stat-lbl{font-size:10px;color:var(--ink-muted);margin-top:2px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.chart-card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:18px}
+.chart-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:10px}
+.chart-wrap{position:relative;height:190px}
+.ai-panel{background:var(--navy);border-radius:9px;padding:20px 24px;margin-bottom:18px;color:var(--white)}
+.ai-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ai-title{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400}
+.ai-badge{font-size:10px;color:var(--orange);font-weight:500;display:flex;align-items:center;gap:4px}
+.ai-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.ai-options{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.ai-opt{padding:4px 11px;border:1px solid #2a4560;background:none;color:#7a9ab0;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;transition:.15s}
+.ai-opt:hover,.ai-opt.active{border-color:var(--orange);color:var(--orange);background:rgba(224,117,53,.08)}
+.ai-provider-row{display:flex;gap:7px;margin-bottom:8px;align-items:center}
+.ai-prov-lbl{font-size:10px;color:#4a6070;white-space:nowrap}
+.ai-prov-sel{background:#1d3245;border:1px solid #3a5570;color:var(--white);padding:4px 9px;border-radius:5px;font-size:10px;font-family:inherit;outline:none;cursor:pointer}
+.ai-prov-sel option{background:#1d3245;color:var(--white)}
+.ai-key-row{display:flex;gap:5px;margin-bottom:9px;align-items:center}
+.ai-key-lbl{font-size:10px;color:#4a6070;white-space:nowrap}
+.ai-key-input{flex:1;background:rgba(255,255,255,.05);border:1px solid #2a4560;color:var(--white);padding:5px 9px;border-radius:5px;font-size:10px;font-family:inherit;outline:none}
+.ai-key-input:focus{border-color:var(--orange)}
+.ai-key-save{padding:5px 11px;background:var(--orange);border:none;color:var(--white);border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit}
+.ai-output{background:rgba(255,255,255,.04);border:1px solid #2a4560;border-radius:7px;padding:12px;min-height:55px;font-size:11px;line-height:1.7;color:#cce0ee;font-weight:300;white-space:pre-wrap}
+.ai-output.idle{color:#4a6070;font-style:italic}
+.ai-actions{display:flex;gap:6px;margin-top:9px}
+.btn-gen{padding:6px 16px;background:var(--orange);color:var(--white);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-gen:hover{background:var(--orange2)}.btn-gen:disabled{opacity:.5;cursor:not-allowed}
+.btn-copy-ai{padding:6px 11px;background:none;border:1px solid #2a4560;color:#7a9ab0;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-copy-ai:hover{border-color:var(--orange);color:var(--orange)}
+.filters-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:9px}
+.f-input,.f-select{padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:var(--white);font-size:11px;color:var(--ink);font-family:inherit;outline:none}
+.f-input:focus,.f-select:focus{border-color:var(--orange)}.f-input{width:170px}
+.f-count{font-size:10px;color:var(--ink-muted);margin-left:auto}
+.bar-actions{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+.btn-sm{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--white);color:var(--ink);transition:.15s}
+.btn-sm:hover{border-color:var(--orange);color:var(--orange)}
+.btn-sm.primary{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:18px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--navy);color:var(--white);padding:9px 11px;text-align:left;font-size:10px;font-weight:500;letter-spacing:.03em;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{background:var(--navy2)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--orange-pale)}
+td{padding:8px 11px;font-size:11px;vertical-align:middle}
+.co-name{font-weight:600;color:var(--ink);font-size:12px}
+.co-sub{font-size:10px;color:var(--ink-muted);font-weight:300;margin-top:1px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-block;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.b-pn{background:#fce0cc;color:#a04000}.b-ih{background:#ddeaf4;color:#1d4d6e}.b-fm{background:var(--rose-light);color:var(--rose)}
+.b-startup{background:#e8f0fe;color:#1a56a0}.b-incumbent{background:var(--purple-light);color:var(--purple)}.b-acquirer{background:#fee8e8;color:#9a1a1a}
+.b-priority{background:var(--green-light);color:var(--green)}.b-interested{background:#fce0cc;color:#a04000}.b-watch{background:#f0f4f8;color:#7a9ab0}
+.b-pedigree{background:#f0e8fe;color:#5a1a9a;font-size:9px}
+.sbar{display:flex;align-items:center;gap:4px}
+.strack{width:36px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.sfill{height:100%;border-radius:2px;background:var(--orange)}
+.snum{font-size:10px;color:var(--ink-muted)}
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:.2s}
+.panel-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;right:0;top:0;bottom:0;width:520px;background:var(--white);z-index:301;transform:translateX(100%);transition:.25s ease;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.15)}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{background:var(--navy);padding:18px 22px;color:var(--white);position:relative}
+.dp-close{position:absolute;top:14px;right:18px;background:none;border:none;color:#7a9ab0;font-size:17px;cursor:pointer}
+.dp-close:hover{color:var(--white)}
+.dp-actions{display:flex;gap:6px;margin-top:11px}
+.dp-btn{padding:5px 11px;border-radius:5px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:.15s}
+.dp-btn.edit{background:rgba(255,255,255,.15);color:var(--white)}.dp-btn.edit:hover{background:var(--orange)}
+.dp-btn.del{background:rgba(184,80,80,.3);color:#ffaaaa}.dp-btn.del:hover{background:var(--rose);color:var(--white)}
+.dp-co-name{font-family:'DM Serif Display',serif;font-size:19px;font-weight:400;margin-bottom:4px}
+.dp-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.dp-website{font-size:10px;color:var(--orange);text-decoration:none}
+.dp-body{padding:18px 22px}
+.dp-section{margin-bottom:16px}
+.dp-section-title{font-size:9px;font-weight:600;color:var(--ink-muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dp-field label{font-size:9px;color:var(--ink-muted);font-weight:500;display:block;margin-bottom:1px}
+.dp-field span{font-size:11px;color:var(--ink)}
+.dp-field.full{grid-column:1/-1}
+.dp-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.dp-score-item{text-align:center;padding:10px;background:var(--slate);border-radius:7px}
+.dp-score-val{font-family:'DM Serif Display',serif;font-size:24px;color:var(--orange)}
+.dp-score-lbl{font-size:9px;color:var(--ink-muted);margin-top:1px}
+.notes-area{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;resize:vertical;min-height:65px;outline:none;color:var(--ink)}
+.notes-area:focus{border-color:var(--orange)}
+.links-list{list-style:none;margin-bottom:7px}
+.links-list li{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--slate);border-radius:5px;margin-bottom:4px;font-size:11px}
+.links-list a{color:var(--orange);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.link-del{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:12px}
+.link-del:hover{color:var(--rose)}
+.link-add-row{display:flex;gap:4px;margin-top:6px}
+.link-add-row input{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:5px;font-size:10px;font-family:inherit;outline:none;color:var(--ink)}
+.btn-add-link{padding:5px 10px;background:var(--orange);border:none;color:var(--white);border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit}
+.save-notes-btn{padding:5px 12px;background:var(--navy);border:none;color:var(--white);border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;margin-top:7px}
+.compare-selectors{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.cmp-select{flex:1;min-width:150px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--white);font-size:11px;color:var(--ink);font-family:inherit;outline:none}
+.cmp-add-btn{padding:7px 12px;background:var(--orange);border:none;color:var(--white);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.cmp-remove-btn{padding:2px 7px;background:none;border:1px solid var(--border);color:var(--ink-muted);border-radius:4px;font-size:10px;cursor:pointer;font-family:inherit}
+.cmp-remove-btn:hover{border-color:var(--rose);color:var(--rose)}
+.cmp-table-wrap{background:var(--white);border:1px solid var(--border);border-radius:9px;overflow-x:auto}
+.cmp-table{width:100%;border-collapse:collapse;min-width:460px}
+.cmp-table th{background:var(--navy);color:var(--white);padding:9px 12px;text-align:left;font-size:10px;font-weight:500}
+.cmp-table th.co-th{text-align:center}
+.cmp-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:middle}
+.cmp-table td.attr{font-weight:500;color:var(--ink-soft);background:var(--slate);font-size:10px;white-space:nowrap}
+.cmp-table td.val{text-align:center}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-best{color:var(--green);font-weight:700}.cmp-worst{color:var(--rose)}
+.cmp-empty{text-align:center;padding:40px;color:var(--ink-muted);font-size:12px}
+.cmp-ai-section{background:var(--navy);border-radius:9px;padding:18px 22px;margin-top:18px;color:var(--white)}
+.vis-selector{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.vis-btn{padding:7px 14px;border:2px solid var(--border);background:var(--white);color:var(--ink-soft);border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:.15s}
+.vis-btn:hover{border-color:var(--orange);color:var(--orange)}
+.vis-btn.active{border-color:var(--orange);background:var(--orange-pale);color:var(--orange)}
+.vis-card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:20px;margin-bottom:16px}
+.vis-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.vis-card-title{font-size:13px;font-weight:600;color:var(--ink)}
+.vis-card-desc{font-size:10px;color:var(--ink-muted);margin-bottom:14px}
+.vis-controls{display:flex;gap:9px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.vis-controls label{font-size:10px;color:var(--ink-soft);font-weight:500}
+.vis-controls select,.vis-controls input[type=text]{padding:5px 9px;border:1px solid var(--border);border-radius:5px;font-size:11px;font-family:inherit;outline:none;color:var(--ink)}
+.vis-render{overflow-x:auto;border:1px solid var(--border);border-radius:7px;background:var(--white);padding:14px;min-height:260px}
+.btn-dl-vis{padding:6px 12px;background:var(--navy);border:none;color:var(--white);border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit}
+.btn-dl-vis:hover{background:var(--navy2)}
+.vc-chip{padding:5px 8px;border-radius:5px;font-size:10px;font-weight:500;text-align:center;color:var(--white);cursor:pointer;transition:.15s;margin-bottom:4px}
+.vc-chip:hover{opacity:.85}
+.vc-orange{background:var(--orange)}.vc-navy{background:var(--navy2)}.vc-green{background:var(--green)}.vc-rose{background:var(--rose)}
+.tile-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0}
+.tile{width:90px;border-radius:8px;text-align:center;cursor:pointer;transition:.15s;overflow:hidden;border:1px solid transparent}
+.tile:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.tile-init{width:90px;height:52px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--white)}
+.tile-name{font-size:9px;font-weight:500;padding:4px}
+.tile.pn{background:#fce0cc;color:#a04000;border-color:#f0c09a}
+.tile.ih{background:#ddeaf4;color:#1d4d6e;border-color:#b0d0e8}
+.tile.fm{background:var(--rose-light);color:var(--rose);border-color:#e8b0b0}
+.heatmap-table{width:100%;border-collapse:collapse}
+.heatmap-table th{background:var(--navy);color:var(--white);padding:7px 9px;font-size:9px;font-weight:500;text-align:center}
+.heatmap-table th.row-hdr{text-align:left;background:var(--navy2)}
+.heatmap-table td{padding:10px;text-align:center;font-size:12px;font-weight:600;border:2px solid var(--white)}
+.hm-0{background:#f0f4f8;color:var(--ink-muted)}.hm-1{background:#fce8d0;color:#a04000}
+.hm-2{background:#f5c090;color:#804000}.hm-3{background:#e07535;color:var(--white)}.hm-4{background:#b05020;color:var(--white)}
+.wspace-table{width:100%;border-collapse:collapse}
+.wspace-table th{background:var(--navy);color:var(--white);padding:7px 9px;font-size:9px;font-weight:500;text-align:center}
+.wspace-table th.row-hdr{text-align:left}
+.wspace-table td{padding:8px;text-align:center;font-size:10px;border:1px solid var(--border);vertical-align:top}
+.ws-filled{background:var(--orange-pale);font-weight:500;color:var(--orange)}
+.ws-empty{background:#f8f9fb;color:var(--ink-muted);font-style:italic;font-size:9px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:11px;width:700px;max-width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-hdr{padding:18px 22px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:1}
+.modal-title{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400}
+.modal-close{background:none;border:none;font-size:17px;color:var(--ink-muted);cursor:pointer}
+.modal-body{padding:18px 22px}
+.scraper-box{background:var(--orange-pale);border:1px solid var(--orange);border-radius:8px;padding:14px;margin-bottom:16px}
+.scraper-title{font-size:12px;font-weight:600;color:var(--orange);margin-bottom:8px}
+.scraper-row{display:flex;gap:6px;margin-bottom:8px}
+.scraper-input{flex:1;padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;color:var(--ink)}
+.btn-scrape{padding:8px 16px;background:var(--orange);border:none;color:var(--white);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-scrape:hover{background:var(--orange2)}.btn-scrape:disabled{opacity:.5;cursor:not-allowed}
+.scrape-status{font-size:10px;color:var(--ink-soft);font-style:italic}
+.linkedin-row{margin-top:8px}
+.linkedin-row textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;resize:vertical;height:55px;outline:none;color:var(--ink)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.form-field{display:flex;flex-direction:column;gap:3px}
+.form-field.full{grid-column:1/-1}
+.form-field label{font-size:10px;font-weight:500;color:var(--ink-soft)}
+.form-field input,.form-field select,.form-field textarea{padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;color:var(--ink);outline:none;transition:.15s}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--orange)}
+.form-field textarea{resize:vertical;min-height:48px}
+.form-section-title{grid-column:1/-1;font-size:10px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em;text-transform:uppercase;padding-top:6px;border-top:1px solid var(--border);margin-top:4px}
+.modal-footer{padding:11px 22px 18px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);margin-top:5px}
+.btn-cancel{padding:7px 15px;background:none;border:1px solid var(--border);color:var(--ink-soft);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.btn-save{padding:7px 17px;background:var(--orange);border:none;color:var(--white);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.settings-inner{background:var(--white);border-radius:11px;width:480px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.claude-modal-inner{background:var(--navy);border-radius:11px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.claude-prompt-btn{padding:5px 12px;border:1px solid #2a4560;background:none;color:#7a9ab0;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;transition:.15s}
+.claude-prompt-btn:hover,.claude-prompt-btn.active{border-color:var(--orange);color:var(--orange);background:rgba(224,117,53,.08)}
+.claude-data-box{background:rgba(255,255,255,.04);border:1px solid #2a4560;border-radius:7px;padding:12px;font-size:10px;line-height:1.7;color:#cce0ee;font-family:monospace;max-height:260px;overflow-y:auto;white-space:pre-wrap}
+.section-wrap{display:none}.section-wrap.active{display:block}
+.center-msg{text-align:center;padding:50px;color:var(--ink-muted);font-size:13px}
+</style>
 </head>
 <body>
-
-  <header>
-    <div>
-      <h1>TMG Portfolio Intelligence</h1>
-      <span id="activeProviderLabel" style="font-size: 0.8rem; color: var(--text-muted);">Provider: Gemini</span>
+<header>
+  <a class="logo" href="#"><div class="logo-box">M</div><div><div class="logo-text">The March Group</div><div class="logo-sub">Market Intelligence</div></div></a>
+  <nav>
+    <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="showSection('companies')">Companies</button>
+    <button class="nav-btn" onclick="showSection('compare')">Compare</button>
+    <button class="nav-btn" onclick="showSection('visuals')">Visuals</button>
+  </nav>
+  <div class="header-right">
+    <div class="sync-dot" id="syncDot"></div>
+    <span class="last-upd" id="lastUpd">Connecting...</span>
+    <button class="h-btn claude" onclick="openClaudeModal()">Send to Claude</button>
+    <button class="h-btn" onclick="loadData()">Refresh</button>
+    <button class="h-btn" onclick="openSettings()">Settings</button>
+    <button class="h-btn primary" onclick="openAddModal()">+ Add Company</button>
+  </div>
+</header>
+<main>
+  <div id="loadingMsg" class="center-msg">Connecting to Firebase...</div>
+  <div class="section-wrap" id="sec-dashboard">
+    <div class="page-hdr"><h1>Consumer Healthspan Landscape</h1><p>Precision Nutrition - Intelligent Health - Food and Medicine - Live Firebase</p></div>
+    <div class="view-toggle"><button class="vt-btn active" onclick="setView('targets',this)">Investment Targets</button><button class="vt-btn" onclick="setView('landscape',this)">Full Landscape</button></div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Sub-vertical Breakdown</div><div class="chart-wrap"><canvas id="cPie"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Funding by Stage</div><div class="chart-wrap"><canvas id="cFunding"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Healthspan Coverage</div><div class="chart-wrap"><canvas id="cHealth"></canvas></div></div>
+      <div class="chart-card" id="liveFeedPanel"><div class="chart-title" style="display:none">Live Intelligence Feed</div></div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary" onclick="refreshData()">Refresh Data</button>
-      <button class="btn btn-secondary" onclick="openClaudeModal()">AI Landscape Brief</button>
-      <button class="btn btn-secondary" onclick="openSettings()">Settings</button>
-    </div>
-  </header>
-
-  <div class="nav-tabs">
-    <div class="tab active" onclick="switchTab('visualizations')">Visualizations</div>
-    <div class="tab" onclick="switchTab('companies')">Companies Table</div>
-    <div class="tab" onclick="switchTab('scrape')">Web Scraper</div>
-  </div>
-
-  <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search company, focus area, stage..." oninput="filterAndRender()" />
-    <select id="stageFilter" onchange="filterAndRender()">
-      <option value="">All Stages</option>
-      <option value="Pre-seed">Pre-seed</option>
-      <option value="Seed">Seed</option>
-      <option value="Series A">Series A</option>
-      <option value="Series B">Series B</option>
-      <option value="Public">Public</option>
-    </select>
-  </div>
-
-  <!-- Visualizations View -->
-  <div id="view-visualizations" class="view-section active">
-    <div class="vis-grid">
-      <div id="vis-funding"></div>
-      <div id="vis-geo"></div>
-    </div>
-  </div>
-
-  <!-- Companies Table View -->
-  <div id="view-companies" class="view-section">
-    <table id="companyTable">
-      <thead>
-        <tr>
-          <th>Company Name</th>
-          <th>Focus Area</th>
-          <th>Stage</th>
-          <th>Location</th>
-          <th>Runway (mo)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- Web Scraper View -->
-  <div id="view-scrape" class="view-section">
-    <div class="vis-card">
-      <div class="vis-card-title">Extract Company Data from URL</div>
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <input type="text" id="scrapeUrl" placeholder="https://example.com/company-info" />
-        <button class="btn" onclick="scrapeUrl()">Scrape Content</button>
+    <div class="ai-panel">
+      <div class="ai-hdr"><span class="ai-title">AI Analysis</span><span class="ai-badge">Groq / Gemini / Claude</span></div>
+      <div class="ai-options">
+        <button class="ai-opt active" onclick="selPrompt(this,'newsletter')">Newsletter</button>
+        <button class="ai-opt" onclick="selPrompt(this,'whitespace')">White Space</button>
+        <button class="ai-opt" onclick="selPrompt(this,'priority')">Priority Memo</button>
+        <button class="ai-opt" onclick="selPrompt(this,'thesis')">Thesis Validation</button>
+        <button class="ai-opt" onclick="selPrompt(this,'diligence')">Due Diligence</button>
+        <button class="ai-opt" onclick="selPrompt(this,'runway')">Runway Watch</button>
       </div>
-      <pre id="scrapeResult" style="background:#f1f5f9; padding: 12px; border-radius: 6px; margin-top:12px; white-space: pre-wrap; font-size: 0.8rem;"></pre>
+      <div class="ai-provider-row">
+        <span class="ai-prov-lbl">Provider:</span>
+        <select class="ai-prov-sel" id="aiProvider" onchange="updateKeyLabel()">
+          <option value="groq">Groq Llama 3.3 (Free, recommended)</option>
+          <option value="gemini">Gemini Flash (Free)</option>
+          <option value="claude">Claude (Anthropic)</option>
+        </select>
+      </div>
+      <div class="ai-key-row">
+        <span class="ai-key-lbl" id="aiKeyLbl">Gemini API Key:</span>
+        <input class="ai-key-input" type="password" id="apiKeyInput" placeholder="AIza...">
+        <button class="ai-key-save" onclick="saveKey()">Save</button>
+      </div>
+      <div class="ai-output idle" id="aiOutput">Select analysis type and click Generate.</div>
+      <div class="ai-actions"><button class="btn-gen" id="btnGen" onclick="generateAI()">Generate</button><button class="btn-copy-ai" onclick="copyAI()">Copy</button></div>
     </div>
   </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-hdr">
-        <h3>Settings</h3>
-        <button class="btn btn-secondary" onclick="closeSettings()">✕</button>
+  <div class="section-wrap" id="sec-companies">
+    <div class="page-hdr"><h1>Company Database</h1><p>Live - shared across all team members - Click any row for full profile</p></div>
+    <div class="view-toggle"><button class="vt-btn active" onclick="setView('targets',this)">Investment Targets</button><button class="vt-btn" onclick="setView('landscape',this)">Full Landscape</button></div>
+    <div class="bar-actions">
+      <button class="btn-sm primary" onclick="openAddModal()">+ Add Company</button>
+      <button class="btn-sm" onclick="exportCSV()">Export CSV</button>
+      <button class="btn-sm" onclick="importFromSheet()">Sync from Sheet</button>
+    </div>
+    <div class="filters-bar">
+      <input class="f-input" type="text" placeholder="Search..." id="srch" oninput="applyFilters()">
+      <select class="f-select" id="fFocus" onchange="applyFilters()"><option value="">All Focus Areas</option><option>Precision Nutrition</option><option>Intelligent Health</option><option>Food and Medicine</option></select>
+      <select class="f-select" id="fStage" onchange="applyFilters()"><option value="">All Stages</option><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Public</option></select>
+      <select class="f-select" id="fInterest" onchange="applyFilters()"><option value="">All Interest</option><option>Priority</option><option>Interested</option><option>Watch</option></select>
+      <select class="f-select" id="fType" onchange="applyFilters()"><option value="">All Types</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option></select>
+      <select class="f-select" id="fPedigree" onchange="applyFilters()"><option value="">All Pedigree</option><option>Repeat Founder</option><option>Ex-FAANG</option><option>PhD-Researcher</option><option>First-time</option><option>Mixed</option></select>
+      <span class="f-count" id="fCount"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="srt('Company Name')">Company</th>
+          <th onclick="srt('TMG Focus Area')">Focus Area</th>
+          <th onclick="srt('Stage')">Stage</th>
+          <th onclick="srt('Funding Raised')">Funding</th>
+          <th onclick="srt('Geography')">Geo</th>
+          <th onclick="srt('Company Type')">Type</th>
+          <th onclick="srt('Founder Pedigree')">Pedigree</th>
+          <th onclick="srt('IP / Patent Status')">IP</th>
+          <th onclick="srt('Last Funded Date')">Last Funded</th>
+          <th onclick="srt('Estimated Runway (months)')">Runway</th>
+          <th onclick="srt('Market Traction')">Traction</th>
+          <th onclick="srt('Data Moat')">Data Moat</th>
+          <th onclick="srt('TMG Interest Level')">Interest</th>
+        </tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section-wrap" id="sec-compare">
+    <div class="page-hdr"><h1>Competitive Comparison</h1><p>Select up to 10 companies - Generate AI insights from selected companies</p></div>
+    <div class="compare-selectors" id="cmpSelectors">
+      <select class="cmp-select" id="cmp_0" onchange="renderCompare()"><option value="">Select Company...</option></select>
+      <select class="cmp-select" id="cmp_1" onchange="renderCompare()"><option value="">Select Company...</option></select>
+      <select class="cmp-select" id="cmp_2" onchange="renderCompare()"><option value="">Select Company...</option></select>
+      <button class="cmp-add-btn" onclick="addCmpSlot()">+ Add</button>
+    </div>
+    <div id="cmpOutput"><div class="cmp-empty">Select companies above to compare</div></div>
+    <div class="cmp-ai-section" id="cmpAiSection" style="display:none">
+      <div class="ai-hdr"><span class="ai-title" style="font-size:14px">AI Insights</span><span class="ai-badge">Groq / Gemini / Claude</span></div>
+      <div class="ai-options">
+        <button class="ai-opt active" onclick="selCmpPrompt(this,'compare')">Compare</button>
+        <button class="ai-opt" onclick="selCmpPrompt(this,'winner')">Pick Winner</button>
+        <button class="ai-opt" onclick="selCmpPrompt(this,'gaps')">Find Gaps</button>
+        <button class="ai-opt" onclick="selCmpPrompt(this,'invest')">Investment Case</button>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <label>
-          AI Provider:
-          <select id="s_provider" style="width: 100%; margin-top: 4px;">
-            <option value="gemini">Google Gemini</option>
-            <option value="claude">Anthropic Claude</option>
-          </select>
-        </label>
-        <label>
-          Gemini API Key:
-          <input type="text" id="s_geminiKey" style="width: 100%; margin-top: 4px;" />
-        </label>
-        <label>
-          Claude API Key:
-          <input type="text" id="s_claudeKey" style="width: 100%; margin-top: 4px;" />
-        </label>
-        <button class="btn" onclick="saveSettings()">Save Settings</button>
+      <div class="ai-output idle" id="cmpAiOutput" style="margin-top:9px">Click Generate to analyse selected companies.</div>
+      <div class="ai-actions" style="margin-top:9px"><button class="btn-gen" onclick="generateCmpAI()">Generate</button><button class="btn-copy-ai" onclick="copyCmpAI()">Copy</button></div>
+    </div>
+  </div>
+  <div class="section-wrap" id="sec-visuals">
+    <div class="page-hdr"><h1>Market Visuals</h1><p>Strategic views - download any visual as PNG for newsletters and reports</p></div>
+    <div class="vis-selector">
+      <button class="vis-btn active" onclick="setVis('architecture',this)">Architecture</button>
+      <button class="vis-btn" onclick="setVis('ecosystem',this)">Ecosystem Map</button>
+      <button class="vis-btn" onclick="setVis('valuechain',this)">Value Chain</button>
+      <button class="vis-btn" onclick="setVis('classic',this)">VC Grid</button>
+      <button class="vis-btn" onclick="setVis('tile',this)">Tile Landscape</button>
+      <button class="vis-btn" onclick="setVis('matrix2x2',this)">2x2 Matrix</button>
+      <button class="vis-btn" onclick="setVis('bubble',this)">Bubble Chart</button>
+      <button class="vis-btn" onclick="setVis('heatmap',this)">Heatmap</button>
+      <button class="vis-btn" onclick="setVis('whitespace',this)">White Space</button>
+      <button class="vis-btn" onclick="setVis('radar',this)">Radar</button>
+      <button class="vis-btn" onclick="setVis('funding',this)">Funding Timeline</button>
+      <button class="vis-btn" onclick="setVis('geomap',this)">Geographic Map</button>
+      <button class="vis-btn" onclick="setVis('bizmodel',this)">Business Model Mix</button>
+      <button class="vis-btn" onclick="setVis('iplandscape',this)">IP Landscape</button>
+      <button class="vis-btn" onclick="setVis('whynow',this)">Why Now</button>
+    </div>
+    <div id="visContent"></div>
+  </div>
+</main>
+<div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
+<div class="detail-panel" id="detailPanel"><div id="dpContent"></div></div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title" id="modalTitle">Add Company</span><button class="modal-close" onclick="closeAddModal()">X</button></div>
+    <div class="modal-body">
+      <div class="scraper-box">
+        <div class="scraper-title">AI Magic - Auto-fill from URL</div>
+        <div class="scraper-row"><input class="scraper-input" id="scrapeUrl" type="text" placeholder="Paste startup website URL e.g. https://zoescience.co"><button class="btn-scrape" id="btnScrape" onclick="scrapeAndFill()">AI Scrape and Fill</button></div>
+        <div class="scrape-status" id="scrapeStatus">Paste a URL above and let AI auto-populate the form below.</div>
+
+      </div>
+      <input type="hidden" id="f_docId">
+      <div class="form-grid">
+        <div class="form-field full"><label>Company Name *</label><input id="f_name" type="text"></div>
+        <div class="form-field full"><label>One-liner *</label><textarea id="f_oneliner"></textarea></div>
+        <div class="form-section-title">Classification</div>
+        <div class="form-field"><label>TMG Focus Area</label><select id="f_focus"><option value="">-</option><option>Precision Nutrition</option><option>Intelligent Health</option><option>Food and Medicine</option></select></div>
+        <div class="form-field"><label>Sub-category</label><input id="f_sub" type="text"></div>
+        <div class="form-field"><label>Healthspan Target</label><select id="f_health"><option value="">-</option><option>Metabolic Control</option><option>Gut Health</option><option>Cardiovascular Health</option><option>Neurological Health</option><option>Inflammation</option><option>Musculoskeletal</option><option>Multiple</option></select></div>
+        <div class="form-field"><label>Ecosystem Position</label><select id="f_eco"><option value="">-</option><option>Ingredient / Science</option><option>Platform</option><option>Brand</option><option>Distribution / Channel</option></select></div>
+        <div class="form-field"><label>Business Model</label><select id="f_biz"><option value="">-</option><option>B2C</option><option>B2B</option><option>B2B2C</option><option>Marketplace</option><option>SaaS</option></select></div>
+        <div class="form-field"><label>Company Type</label><select id="f_type"><option value="">-</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option></select></div>
+        <div class="form-section-title">Financials and Team</div>
+        <div class="form-field"><label>Geography</label><input id="f_geo" type="text"></div>
+        <div class="form-field"><label>Stage</label><select id="f_stage"><option value="">-</option><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Public</option></select></div>
+        <div class="form-field"><label>Funding Raised</label><input id="f_funding" type="text" placeholder="e.g. $10M"></div>
+        <div class="form-field"><label>Last Funded Date</label><input id="f_lastfunded" type="text" placeholder="e.g. Q2 2024"></div>
+        <div class="form-field"><label>Estimated Runway (months)</label><input id="f_runway" type="text" placeholder="e.g. 18"></div>
+        <div class="form-field"><label>Number of Founders</label><input id="f_founders" type="text" placeholder="e.g. 2"></div>
+        <div class="form-field"><label>Founder Pedigree</label><select id="f_pedigree"><option value="">-</option><option>Repeat Founder</option><option>Ex-FAANG</option><option>PhD-Researcher</option><option>First-time</option><option>Mixed</option></select></div>
+        <div class="form-field"><label>Key Investors</label><input id="f_investors" type="text"></div>
+        <div class="form-section-title">Technology and Product</div>
+        <div class="form-field full"><label>Key Technology</label><input id="f_tech" type="text"></div>
+        <div class="form-field"><label>IP / Patent Status</label><select id="f_ip"><option value="">-</option><option>None</option><option>Applied</option><option>Granted</option><option>Trade Secret</option></select></div>
+        <div class="form-field"><label>Pricing Model</label><input id="f_pricing" type="text"></div>
+        <div class="form-field full"><label>Target Customer</label><input id="f_customer" type="text"></div>
+        <div class="form-field full"><label>Core Moat</label><textarea id="f_moat"></textarea></div>
+        <div class="form-field full"><label>Key Competitors</label><input id="f_competitors" type="text"></div>
+        <div class="form-field full"><label>Execution Risk</label><input id="f_risk" type="text"></div>
+        <div class="form-field full"><label>Website</label><input id="f_website" type="text" placeholder="https://..."></div>
+        <div class="form-section-title">TMG Scores (1-5)</div>
+        <div class="form-field"><label>Market Traction</label><select id="f_traction"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Product Differentiation</label><select id="f_diff"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Capital Efficiency</label><select id="f_capeff"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Clinical Validation</label><select id="f_cv"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>AI Actionability</label><select id="f_ai"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Regulatory Complexity</label><select id="f_reg"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Personalization Depth</label><select id="f_pers"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Data Moat</label><select id="f_dm"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>Scalability</label><select id="f_sc"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="form-field"><label>TMG Interest Level</label><select id="f_interest"><option value="">-</option><option>Priority</option><option>Interested</option><option>Watch</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeAddModal()">Cancel</button><button class="btn-save" onclick="saveCompany()">Save to Database</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-inner modal">
+    <div class="modal-hdr"><span class="modal-title">Settings</span><button class="modal-close" onclick="closeSettings()">X</button></div>
+    <div class="modal-body">
+      <div class="form-field" style="margin-bottom:12px"><label>AI Provider</label><select id="s_provider" style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none"><option value="groq">Groq Llama 3.3 (Free, recommended)</option><option value="gemini">Gemini Flash (Free)</option><option value="claude">Claude (Anthropic)</option></select></div>
+      <div class="form-field" style="margin-bottom:12px"><label>Groq API Key - free at console.groq.com</label><input id="s_groqKey" type="password" placeholder="gsk_..." style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none"></div>
+      <div class="form-field" style="margin-bottom:12px"><label>Gemini API Key - free at aistudio.google.com/app/apikey</label><input id="s_geminiKey" type="password" placeholder="AIza..." style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none"></div>
+      <div class="form-field" style="margin-bottom:12px"><label>Claude API Key</label><input id="s_claudeKey" type="password" placeholder="sk-ant-..." style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none"></div>
+      <div class="form-field" style="margin-bottom:12px"><label>Claude Workspace ID (if identity-linked key)</label><input id="s_workspaceId" type="text" placeholder="wrkspc-..." style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none"></div>
+      <div class="form-field"><label>Google Sheet CSV URL</label><input id="s_csvUrl" type="text" style="margin-top:4px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;width:100%;outline:none" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vR8LViFyryNqnjbQxgOO3SKHjHWAzY-2-S5mERrp7xABQc8_y2iw4mK2DV6PX5HsCN6Yj1wL6HtMOiY/pub?output=csv"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeSettings()">Cancel</button><button class="btn-save" onclick="saveSettings()">Save</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="claudeModal">
+  <div class="claude-modal-inner modal">
+    <div class="modal-hdr" style="background:var(--navy);border-bottom-color:#2a4560"><span class="modal-title" style="color:var(--white)">Send to Claude</span><button class="modal-close" onclick="closeClaudeModal()" style="color:#7a9ab0">X</button></div>
+    <div class="modal-body" style="background:var(--navy);border-radius:0 0 11px 11px;padding:18px 22px">
+      <div style="font-size:11px;color:#7a9ab0;margin-bottom:12px">Copy the data below then open Claude.ai and paste. Claude will have full context of your landscape.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="claudePromptOpts">
+        <button class="claude-prompt-btn active" onclick="setClaude(this,'overview')">Market Overview</button>
+        <button class="claude-prompt-btn" onclick="setClaude(this,'priority')">Who to call first</button>
+        <button class="claude-prompt-btn" onclick="setClaude(this,'runway')">Raising soon</button>
+        <button class="claude-prompt-btn" onclick="setClaude(this,'whitespace')">Find white spaces</button>
+        <button class="claude-prompt-btn" onclick="setClaude(this,'newsletter')">Draft newsletter</button>
+      </div>
+      <div class="claude-data-box" id="claudeDataBox">Loading data...</div>
+      <div style="display:flex;gap:7px;margin-top:12px">
+        <button onclick="copyForClaude()" style="padding:8px 18px;background:#7a3fd0;border:none;color:var(--white);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Copy to Clipboard</button>
+        <button onclick="openClaude()" style="padding:8px 18px;background:var(--orange);border:none;color:var(--white);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Open Claude.ai</button>
       </div>
     </div>
   </div>
-
-  <!-- AI Landscape Modal -->
-  <div id="claudeModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-hdr">
-        <h3>AI Landscape Prompt Generator</h3>
-        <button class="btn btn-secondary" onclick="closeClaudeModal()">✕</button>
-      </div>
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <button id="cp_overview" class="btn btn-secondary ai-opt" onclick="setClaude('overview')">Overview</button>
-        <button id="cp_gaps" class="btn btn-secondary ai-opt" onclick="setClaude('gaps')">Market Gaps</button>
-        <button id="cp_synthesis" class="btn btn-secondary ai-opt" onclick="setClaude('synthesis')">Synthesis</button>
-      </div>
-      <div id="claudePromptText" style="background:#f1f5f9; padding:12px; border-radius:6px; font-size:0.8rem; white-space:pre-wrap; margin-bottom:12px;"></div>
-      <div style="display:flex; justify-content:space-between;">
-        <button class="btn btn-secondary" onclick="copyForClaude()">Copy Prompt</button>
-        <button class="btn" onclick="openClaude()">Open Claude AI</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+</div>
+<!-- PART 2 SCRIPT GOES HERE -->
+<script src="app.js" type="module"></script>
 </body>
 </html>
