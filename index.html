@@ -87,16 +87,22 @@ main{max-width:1360px;margin:0 auto;padding:22px 26px 60px}
 .btn-sm{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--white);color:var(--ink);transition:.15s}
 .btn-sm:hover{border-color:var(--orange);color:var(--orange)}
 .btn-sm.primary{background:var(--orange);border-color:var(--orange);color:var(--white)}
-.tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:18px}
-table{width:100%;border-collapse:collapse}
-thead th{background:var(--navy);color:var(--white);padding:9px 11px;text-align:left;font-size:10px;font-weight:500;letter-spacing:.03em;white-space:nowrap;cursor:pointer;user-select:none}
+.tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:9px;overflow-x:auto;overflow-y:hidden;margin-bottom:18px;-webkit-overflow-scrolling:touch}
+.tbl-wrap::-webkit-scrollbar{height:9px}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+.tbl-wrap::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
+.tbl-scroll-hint{font-size:9.5px;color:var(--ink-muted);text-align:right;margin:-4px 0 6px;display:none}
+.tbl-scroll-hint.show{display:block}
+table{width:100%;min-width:1420px;border-collapse:collapse;table-layout:fixed}
+table col.c-name{width:190px}
+thead th{background:var(--navy);color:var(--white);padding:9px 11px;text-align:left;font-size:10px;font-weight:500;letter-spacing:.03em;white-space:nowrap;cursor:pointer;user-select:none;position:sticky;top:0;z-index:1}
 thead th:hover{background:var(--navy2)}
 tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:.1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--orange-pale)}
-td{padding:8px 11px;font-size:11px;vertical-align:middle}
-.co-name{font-weight:600;color:var(--ink);font-size:12px}
-.co-sub{font-size:10px;color:var(--ink-muted);font-weight:300;margin-top:1px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}
+.co-name{font-weight:600;color:var(--ink);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-sub{font-size:10px;color:var(--ink-muted);font-weight:300;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .badge{display:inline-block;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
 .b-pn{background:#fce0cc;color:#a04000}.b-ih{background:#ddeaf4;color:#1d4d6e}.b-fm{background:var(--rose-light);color:var(--rose)}
 .b-startup{background:#e8f0fe;color:#1a56a0}.b-incumbent{background:var(--purple-light);color:var(--purple)}.b-acquirer{background:#fee8e8;color:#9a1a1a}
@@ -229,6 +235,27 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle}
 .claude-data-box{background:rgba(255,255,255,.04);border:1px solid #2a4560;border-radius:7px;padding:12px;font-size:10px;line-height:1.7;color:#cce0ee;font-family:monospace;max-height:260px;overflow-y:auto;white-space:pre-wrap}
 .section-wrap{display:none}.section-wrap.active{display:block}
 .center-msg{text-align:center;padding:50px;color:var(--ink-muted);font-size:13px}
+.guide-wrap{max-width:880px}
+.guide-intro{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:18px 22px;margin-bottom:16px;font-size:12px;color:var(--ink-soft);line-height:1.7}
+.guide-section{margin-bottom:22px}
+.guide-section-hdr{font-family:'DM Serif Display',serif;font-size:16px;color:var(--ink);margin-bottom:9px;padding-bottom:6px;border-bottom:2px solid var(--orange)}
+.guide-card{background:var(--white);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.guide-card summary{padding:11px 16px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;background:var(--white)}
+.guide-card summary::-webkit-details-marker{display:none}
+.guide-card summary::after{content:'+';font-size:16px;color:var(--orange);font-weight:400}
+.guide-card[open] summary::after{content:'\2212'}
+.guide-card[open] summary{border-bottom:1px solid var(--border);background:var(--orange-pale)}
+.guide-card-body{padding:12px 16px 16px;font-size:11.5px;color:var(--ink-soft);line-height:1.7}
+.guide-card-body p{margin-bottom:8px}
+.guide-card-body ul{margin:0 0 8px 18px}
+.guide-card-body li{margin-bottom:4px}
+.guide-card-body code{background:var(--slate);padding:1px 5px;border-radius:4px;font-size:10.5px;color:var(--navy3)}
+.score-tbl{width:100%;border-collapse:collapse;margin-top:6px}
+.score-tbl th{background:var(--navy);color:var(--white);padding:7px 9px;font-size:10px;text-align:left;font-weight:500}
+.score-tbl td{padding:7px 9px;font-size:10.5px;border-bottom:1px solid var(--border);vertical-align:top}
+.score-tbl tr:last-child td{border-bottom:none}
+.score-name{font-weight:600;color:var(--ink);white-space:nowrap}
+.guide-note{background:var(--orange-pale);border:1px solid var(--orange);border-radius:7px;padding:10px 14px;font-size:10.5px;color:#7a3a10;margin-top:10px}
 </style>
 </head>
 <body>
@@ -239,6 +266,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle}
     <button class="nav-btn" onclick="showSection('companies')">Companies</button>
     <button class="nav-btn" onclick="showSection('compare')">Compare</button>
     <button class="nav-btn" onclick="showSection('visuals')">Visuals</button>
+    <button class="nav-btn" onclick="showSection('guide')">Guide</button>
   </nav>
   <div class="header-right">
     <div class="sync-dot" id="syncDot"></div>
@@ -305,8 +333,12 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle}
       <select class="f-select" id="fPedigree" onchange="applyFilters()"><option value="">All Pedigree</option><option>Repeat Founder</option><option>Ex-FAANG</option><option>PhD-Researcher</option><option>First-time</option><option>Mixed</option></select>
       <span class="f-count" id="fCount"></span>
     </div>
-    <div class="tbl-wrap">
+    <div class="tbl-scroll-hint" id="tblScrollHint">&#8594; scroll for more columns</div>
+    <div class="tbl-wrap" id="tblWrap">
       <table>
+        <colgroup>
+          <col style="width:210px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:100px"><col style="width:100px"><col style="width:130px"><col style="width:90px"><col style="width:100px"><col style="width:80px"><col style="width:90px"><col style="width:90px"><col style="width:100px">
+        </colgroup>
         <thead><tr>
           <th onclick="srt('Company Name')">Company</th>
           <th onclick="srt('TMG Focus Area')">Focus Area</th>
@@ -368,6 +400,103 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle}
     </div>
     <div id="visContent"></div>
   </div>
+  <div class="section-wrap" id="sec-guide">
+    <div class="page-hdr"><h1>Platform Guide</h1><p>What each page does, how the data flows, and how the TMG scores are built</p></div>
+    <div class="guide-wrap">
+      <div class="guide-intro">This platform tracks the Consumer Healthspan competitive landscape (Precision Nutrition, Intelligent Health, Food &amp; Medicine) for The March Group. Company records live in a shared Firebase database and sync from a Google Sheet; the pages below are different views and tools built on top of that same dataset. Click any question to expand it.</div>
+
+      <div class="guide-section">
+        <div class="guide-section-hdr">Pages &amp; Functions</div>
+
+        <details class="guide-card"><summary>Dashboard</summary><div class="guide-card-body">
+          <p>A live snapshot of the landscape: headline stats, a sub-vertical breakdown chart, funding-by-stage chart, healthspan coverage chart, and an AI Analysis panel.</p>
+          <p><strong>Investment Targets vs Full Landscape</strong> - the toggle at the top filters everything on the page: <em>Investment Targets</em> shows only companies tagged <code>Startup</code>; <em>Full Landscape</em> shows every record including incumbents and acquirers. This same toggle exists on the Companies page and applies the same filter.</p>
+          <p><strong>AI Analysis panel</strong> - pick an analysis type (Newsletter, White Space, Priority Memo, Thesis Validation, Due Diligence, Runway Watch), choose a provider, and click Generate. The AI reads a summary of whichever companies are currently in view (respecting the Targets/Landscape toggle) and writes the output in the box below - copy it out with the Copy button.</p>
+        </div></details>
+
+        <details class="guide-card"><summary>Companies</summary><div class="guide-card-body">
+          <p>The full company database as a sortable, filterable table. Click any row to open a detail panel with every field, your private notes, and reference links.</p>
+          <ul>
+            <li><strong>+ Add Company</strong> - opens a form; paste a company website into the "AI Magic" box at the top and click <em>AI Scrape and Fill</em> to auto-populate as many fields as the page reveals (scores are only filled where there's real evidence - blanks mean the AI found no signal).</li>
+            <li><strong>Export CSV</strong> - downloads the current dataset as a spreadsheet file.</li>
+            <li><strong>Sync from Sheet</strong> - pulls fresh rows from the Google Sheet CSV URL set in Settings and merges them into Firebase.</li>
+            <li><strong>Filters</strong> - search box plus dropdowns for Focus Area, Stage, Interest level and Company Type; the count on the right shows how many rows match.</li>
+            <li>The table scrolls horizontally to reveal all 13 columns - drag right on the table itself, or use a trackpad/shift-scroll, to see Runway, Traction and the remaining score columns.</li>
+          </ul>
+        </div></details>
+
+        <details class="guide-card"><summary>Compare</summary><div class="guide-card-body">
+          <p>Select up to 10 companies side by side in an attribute-by-attribute table (add more comparison slots with <em>+ Add</em>). Below the table, the AI panel can generate a straight Compare, a Pick Winner recommendation, a Find Gaps read on what's missing across the set, or a short Investment Case.</p>
+        </div></details>
+
+        <details class="guide-card"><summary>Visuals</summary><div class="guide-card-body">
+          <p>Fifteen chart/map views of the same dataset, each downloadable as a PNG for decks or newsletters. Quick reference:</p>
+          <ul>
+            <li><strong>Architecture, Value Chain, Why Now</strong> - narrative/structural diagrams of the market.</li>
+            <li><strong>Ecosystem Map</strong> - concentric-ring view: focus areas in the middle, companies grouped around them by sector, colour-coded by focus area with the ring colour showing ecosystem role (Ingredient/Science, Platform, Brand, Distribution).</li>
+            <li><strong>VC Grid, Tile Landscape, Classic</strong> - companies grouped into a scannable grid or tiles by focus area and stage.</li>
+            <li><strong>2x2 Matrix, Bubble Chart, Radar</strong> - plot any two (or more) TMG scores against each other to compare companies quantitatively.</li>
+            <li><strong>Heatmap, White Space</strong> - density grids across Focus Area x Healthspan Target (or Ecosystem Position) - empty/white cells flag potential investment gaps.</li>
+            <li><strong>Funding Timeline</strong> - funding stage/date activity over time.</li>
+            <li><strong>Geographic Map</strong> - company HQs plotted on a world map; bubble size = number of companies at that location, colour = dominant focus area there. A list underneath the map spells out exactly who's in each location.</li>
+            <li><strong>Business Model Mix, IP Landscape</strong> - breakdowns by business model and by patent/IP status.</li>
+          </ul>
+        </div></details>
+
+        <details class="guide-card"><summary>Send to Claude</summary><div class="guide-card-body">
+          <p>Packages a snapshot of the current dataset into a ready-made prompt (Market Overview, Who to call first, Raising soon, Find white spaces, Draft newsletter). Copy it and paste into Claude.ai, or use <em>Open Claude.ai</em> to launch a new chat directly.</p>
+        </div></details>
+
+        <details class="guide-card"><summary>Settings</summary><div class="guide-card-body">
+          <p>Choose which AI provider powers the AI Analysis, Compare and scraping features (Groq and Gemini have free tiers; Claude requires your own Anthropic API key), enter the matching API key, and set the Google Sheet CSV URL that <em>Sync from Sheet</em> pulls from.</p>
+        </div></details>
+
+        <details class="guide-card"><summary>Notes &amp; links on a company</summary><div class="guide-card-body">
+          <p>Open any company's detail panel to add private notes and reference links (call notes, press articles, decks). These are saved locally in your browser, so they're personal to your device rather than shared with the team the way the Firebase record is.</p>
+        </div></details>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-hdr">How the TMG Scores are built</div>
+        <div class="guide-card" style="padding:12px 16px 16px">
+          <p style="font-size:11.5px;color:var(--ink-soft);margin-bottom:8px">Every company can carry nine 1-5 scores plus an overall interest level. Scores are meant to reflect <strong>evidence actually found</strong> about a company (traction numbers, press, study/clinical language, technology claims, pricing structure) - a blank score means no real signal was found, not a zero.</p>
+          <table class="score-tbl">
+            <thead><tr><th>Score (1-5)</th><th>What it's judging</th></tr></thead>
+            <tbody>
+              <tr><td class="score-name">Market Traction</td><td>Evidence of real customer/user adoption - customer counts, revenue signals, press coverage of growth.</td></tr>
+              <tr><td class="score-name">Product Differentiation</td><td>How distinct the product or approach is versus competitors - proprietary method, unique claims.</td></tr>
+              <tr><td class="score-name">Capital Efficiency</td><td>How much traction/output the company has produced relative to capital raised.</td></tr>
+              <tr><td class="score-name">Clinical Validation</td><td>Evidence of clinical trials, published studies, or scientific rigor behind health claims.</td></tr>
+              <tr><td class="score-name">AI Actionability</td><td>How central AI/ML is to the actual product value - not just a marketing mention.</td></tr>
+              <tr><td class="score-name">Regulatory Complexity</td><td>Degree of regulatory hurdle or risk the business faces (e.g. FDA, medical device pathways).</td></tr>
+              <tr><td class="score-name">Personalization Depth</td><td>How individualized/tailored the product experience is versus one-size-fits-all.</td></tr>
+              <tr><td class="score-name">Data Moat</td><td>Strength of any proprietary data advantage competitors can't easily replicate.</td></tr>
+              <tr><td class="score-name">Scalability</td><td>How easily the business model scales without proportional cost increase.</td></tr>
+              <tr><td class="score-name">TMG Interest Level</td><td>Overall team call - Priority / Interested / Watch - not an average of the scores above, it's a separate judgment call.</td></tr>
+            </tbody>
+          </table>
+          <div class="guide-note">This table is a working summary for quick reference inside the platform. The source of truth for exact scoring definitions and edge cases is the <strong>Meta tab of the team Google Sheet</strong> - check there (and keep it updated) if a score's meaning is ambiguous or this summary looks out of date.</div>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-hdr">Operating notes</div>
+        <details class="guide-card"><summary>Where does the data actually live?</summary><div class="guide-card-body">
+          <p>Firebase is the live, shared source everyone sees in the app in real time. The Google Sheet is a convenient bulk-editing surface - <em>Sync from Sheet</em> is a one-way pull from Sheet into Firebase, it does not push app edits back to the Sheet. If you edit a company in the app (or via AI scrape), make sure the Sheet doesn't overwrite it later with stale data.</p>
+        </div></details>
+        <details class="guide-card"><summary>AI providers - which one to use</summary><div class="guide-card-body">
+          <p>Groq (Llama 3.3) and Gemini Flash both have free tiers and are the recommended default. Claude requires your own Anthropic API key and is best reserved for higher-stakes analysis (priority memos, due diligence) where output quality matters most.</p>
+        </div></details>
+        <details class="guide-card"><summary>Keeping the dataset clean</summary><div class="guide-card-body">
+          <ul>
+            <li>Use the AI Scrape tool as a first pass, then sanity-check the fields it fills - especially the scores, which it should leave blank rather than guess when it has no evidence.</li>
+            <li>Company Name is the de-duplication key - two records with the same name will collapse to whichever has the most recent "Last Updated" value.</li>
+            <li>Fill Geography using the same country names consistently (e.g. "United States", not "USA" and "US" interchangeably) so the Geographic Map groups them correctly.</li>
+          </ul>
+        </div></details>
+      </div>
+    </div>
+  </div>
 </main>
 <div class="panel-overlay" id="overlay" onclick="closePanel()"></div>
 <div class="detail-panel" id="detailPanel"><div id="dpContent"></div></div>
@@ -378,6 +507,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle}
       <div class="scraper-box">
         <div class="scraper-title">AI Magic - Auto-fill from URL</div>
         <div class="scraper-row"><input class="scraper-input" id="scrapeUrl" type="text" placeholder="Paste startup website URL e.g. https://zoescience.co"><button class="btn-scrape" id="btnScrape" onclick="scrapeAndFill()">AI Scrape and Fill</button></div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-soft);margin-top:6px;cursor:pointer"><input type="checkbox" id="scrapeOverwrite" style="cursor:pointer">Overwrite fields that already have a value (off = only fills blanks, safe for editing)</label>
         <div class="scrape-status" id="scrapeStatus">Paste a URL above and let AI auto-populate the form below.</div>
 
       </div>
