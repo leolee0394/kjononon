@@ -389,6 +389,7 @@ function fmtRunway(v){
   return /^[\d.]+(\s*[-–]\s*[\d.]+)?$/.test(t)?t+' mo':t;
 }
 window.fmtRunway=fmtRunway;
+const CSV_HEADER_ALIASES=(()=>{
   const canon=['Company Name','One-liner','TMG Focus Area','Sub-category','Healthspan Target','Ecosystem Position','Business Model','Company Type','Geography','Stage','Funding Raised','Last Funded Date','Estimated Runway (months)','Number of Founders','Founder Pedigree','Key Investors','Key Technology','IP / Patent Status','Pricing Model','Target Customer','Core Moat','Key Competitors','Execution Risk','Website','Market Traction','Product Differentiation','Capital Efficiency','Clinical Validation','AI Actionability','Regulatory Complexity','Personalization Depth','Data Moat','Scalability','TMG Interest Level','Last Updated'];
   const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
   const map={};
