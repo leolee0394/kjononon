@@ -8,7 +8,7 @@ const COL = 'companies';
 const SCORE_COLS = ['Market Traction','Product Differentiation','Capital Efficiency','Clinical Validation','AI Actionability','Regulatory Complexity','Personalization Depth','Data Moat','Scalability'];
 
 let allData=[], filteredData=[], curView='targets', curSection='dashboard';
-let sortCol='', sortDir=1, curPrompt='newsletter', curVis='architecture', cmpPrompt='compare', numCmpSlots=3;
+let sortCol='', sortDir=1, curPrompt='newsletter', curVis='ecosystem', cmpPrompt='compare', numCmpSlots=3;
 let charts={}, visCharts={}, claudePromptType='overview', claudePayload='';
 
 const exp = {setView,showSection,openAddModal,closeAddModal,saveCompany,openSettings,closeSettings,saveSettings,applyFilters,srt,openPanel,closePanel,editCompany,deleteCompany,addLink,delLink,saveNotes,renderCompare,addCmpSlot,selPrompt,selCmpPrompt,generateAI,generateCmpAI,copyAI,copyCmpAI,saveKey,updateKeyLabel,setVis,exportCSV,importFromSheet,dlVis,dlChart,updateMatrix,updateBubble,updateRadar,dlRadarChart,renderVis,scrapeAndFill,openClaudeModal,closeClaudeModal,setClaude,copyForClaude,openClaude,loadData};
@@ -58,6 +58,7 @@ function showSection(id){
   if(id==='visuals')renderVis();
   if(id==='compare')renderCompare();
   if(id==='companies')setTimeout(checkTblScroll,50);
+  if(id==='guide'){const g=document.getElementById('guideArch');if(g)renderArchitecture(allData,g);}
 }
 function checkTblScroll(){
   const wrap=document.getElementById('tblWrap'),hint=document.getElementById('tblScrollHint');
@@ -69,13 +70,13 @@ window.addEventListener('resize',()=>{if(curSection==='companies')checkTblScroll
 function renderStats(data){
   const s=data.filter(r=>r['Company Type']==='Startup').length;
   const p=data.filter(r=>r['TMG Interest Level']==='Priority').length;
-  const inc=data.filter(r=>['Incumbent','Acquirer'].includes(r['Company Type'])).length;
+  const inc=data.filter(r=>r['Company Type']&&r['Company Type']!=='Startup').length;
   const raising=data.filter(r=>r['Estimated Runway (months)']&&+r['Estimated Runway (months)']<=12).length;
   document.getElementById('statsRow').innerHTML=`
     <div class="stat-card"><div class="stat-val">${s}</div><div class="stat-lbl">Startups tracked</div></div>
     <div class="stat-card s2"><div class="stat-val">${p}</div><div class="stat-lbl">Priority targets</div></div>
     <div class="stat-card s4"><div class="stat-val">${raising}</div><div class="stat-lbl">Raising soon (&lt;12mo runway)</div></div>
-    <div class="stat-card s5"><div class="stat-val">${inc}</div><div class="stat-lbl">Incumbents & acquirers</div></div>`;
+    <div class="stat-card s5"><div class="stat-val">${inc}</div><div class="stat-lbl">Landscape context (non-startup)</div></div>`;
 }
 
 function cnt(data,key){return data.reduce((a,r)=>{const v=r[key]||'Unknown';a[v]=(a[v]||0)+1;return a;},{});}
@@ -151,7 +152,7 @@ function applyFilters(){
 }
 function srt(col){if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1;}filteredData.sort((a,b)=>(a[col]||'').toString().localeCompare((b[col]||'').toString(),undefined,{numeric:true})*sortDir);renderTable();}
 function fBadge(a){return a==='Precision Nutrition'?'b-pn':a==='Intelligent Health'?'b-ih':'b-fm';}
-function tBadge(t){return t==='Startup'?'b-startup':t==='Incumbent'?'b-incumbent':'b-acquirer';}
+function tBadge(t){return t==='Startup'?'b-startup':t==='Incumbent'?'b-incumbent':t==='Acquirer'?'b-acquirer':t==='Regulator'?'b-regulator':t==='Distribution'?'b-distribution':t==='Research Institution'?'b-research':'b-watch';}
 function iBadge(l){return l==='Priority'?'b-priority':l==='Interested'?'b-interested':'b-watch';}
 function sbar(v){const n=parseFloat(v)||0,p=(n/5)*100;return `<div class="sbar"><div class="strack"><div class="sfill" style="width:${p}%"></div></div><span class="snum">${v||'-'}</span></div>`;}
 
@@ -615,16 +616,20 @@ function renderEcosystem(data,vc){
     <div id="eco-wrap" style="background:#f8faff;border-radius:8px;overflow:hidden;padding:10px;position:relative"></div>
     <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;font-size:9.5px;color:var(--ink-muted)">
       <div><strong style="color:var(--ink-soft)">Colour</strong> = focus area</div>
-      <div><strong style="color:var(--ink-soft)">Shape</strong> = &#9679; startup &nbsp; &#9670; incumbent &nbsp; &#9632; acquirer</div>
+      <div><strong style="color:var(--ink-soft)">Shape</strong> = &#9679; startup &nbsp; &#9670; incumbent &nbsp; &#9632; acquirer &nbsp; &#9650; regulator &nbsp; &#10010; distribution &nbsp; &#9733; research inst.</div>
       <div><strong style="color:var(--ink-soft)">Border</strong> = &#128993; priority &nbsp; white/thick = interested &nbsp; faint = watch</div>
-      <div><strong style="color:var(--ink-soft)">Distance from centre</strong> = funding stage / maturity (early &#8594; public)</div>
+      <div><strong style="color:var(--ink-soft)">Distance from centre</strong> = funding stage / maturity (early &#8594; public). Regulators sit outside the sector wedges (not focus-area specific) - see the list below.</div>
       <div><strong style="color:var(--ink-soft)">Outer amber nodes</strong> = investors backing ${ecoMinInvestor}+ companies here</div>
     </div>
     ${nonStartups.length?`<div style="margin-top:14px;background:var(--slate);border:1px solid var(--border);border-radius:8px;padding:12px 16px">
-      <div style="font-size:10px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Incumbents &amp; Acquirers in this landscape (${nonStartups.length})</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${nonStartups.map(r=>`<span onclick="showSection('companies');openPanel('${(r['Company Name']||'').replace(/'/g,"\\'")}')" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 8px;font-size:10.5px;color:var(--ink)"><span style="width:8px;height:8px;border-radius:${r['Company Type']==='Acquirer'?'2px':'50%'};background:${aColors[r['TMG Focus Area']]||'#888'};display:inline-block;transform:${r['Company Type']==='Incumbent'?'rotate(45deg)':'none'}"></span><strong>${r['Company Name']}</strong><span style="color:var(--ink-muted)">${r['Company Type']} · ${r['Stage']||'-'}</span></span>`).join('')}
-      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Landscape context - non-startup entities (${nonStartups.length})</div>
+      ${['Incumbent','Acquirer','Regulator','Distribution','Research Institution'].filter(t=>nonStartups.some(r=>r['Company Type']===t)).map(t=>`
+      <div style="margin-bottom:8px">
+        <div style="font-size:9.5px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px">${t}${t==='Regulator'?' (cross-sector - not plotted on the wheel)':''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${nonStartups.filter(r=>r['Company Type']===t).map(r=>`<span onclick="showSection('companies');openPanel('${(r['Company Name']||'').replace(/'/g,"\\'")}')" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 8px;font-size:10.5px;color:var(--ink)"><span class="badge ${tBadge(r['Company Type'])}" style="padding:1px 6px;font-size:9px">${r['Company Type']}</span><strong>${r['Company Name']}</strong>${r['TMG Focus Area']?`<span style="color:var(--ink-muted)">${r['TMG Focus Area']}</span>`:''}</span>`).join('')}
+        </div>
+      </div>`).join('')}
     </div>`:''}
     <div style="margin-top:14px;display:flex;gap:22px;flex-wrap:wrap">
       ${areas.map(a=>`<div style="min-width:200px;flex:1">
@@ -694,8 +699,9 @@ function renderEcosystem(data,vc){
       return{stroke:'#ffffff',w:1,op:.55};
     }
     function symbolPath(type){
-      const t=type==='Incumbent'?d3.symbolDiamond:type==='Acquirer'?d3.symbolSquare:d3.symbolCircle;
-      const sz=type==='Startup'?300:520;
+      const map={Incumbent:d3.symbolDiamond,Acquirer:d3.symbolSquare,Regulator:d3.symbolTriangle,Distribution:d3.symbolCross,'Research Institution':d3.symbolStar};
+      const t=map[type]||d3.symbolCircle;
+      const sz=type==='Startup'||!type?300:560;
       return d3.symbol().type(t).size(sz)();
     }
 
@@ -894,12 +900,14 @@ function renderFunding(data,vc){
 }
 
 function renderGeoMap(data,vc){
-  // Real lat/lon projected onto the actual world map image (worldmap.png must
-  // sit alongside index.html/app.js). Projection is calibrated to that image:
-  // x = (180 - lon) / 360 * W   (map's left edge is the Pacific split, ~lon +180)
-  // y = (LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM) * H
-  const W=1600,H=794,LAT_TOP=83,LAT_BOTTOM=-58;
-  const proj=(lat,lon)=>({x:(180-lon)/360*W, y:(LAT_TOP-lat)/(LAT_TOP-LAT_BOTTOM)*H});
+  // Real lat/lon projected onto the actual world map image (worldmap.jpg must
+  // sit alongside index.html/app.js). This image is a standard Greenwich-
+  // centered equirectangular map (lon -180 at the left edge, +180 at the
+  // right, 0 at centre; lat +90 at the top, -90 at the bottom), cropped to a
+  // 16:9 frame - the viewBox below matches that aspect ratio exactly so the
+  // image isn't sliced/cropped on render.
+  const W=1600,H=900,LAT_TOP=90,LAT_BOTTOM=-90;
+  const proj=(lat,lon)=>({x:(lon+180)/360*W, y:(LAT_TOP-lat)/(LAT_TOP-LAT_BOTTOM)*H});
   const geo={
     'US':{lat:39.8,lon:-98.6,label:'United States'},'USA':{lat:39.8,lon:-98.6,label:'United States'},'United States':{lat:39.8,lon:-98.6,label:'United States'},
     'UK':{lat:54.0,lon:-2.0,label:'UK'},'United Kingdom':{lat:54.0,lon:-2.0,label:'UK'},
@@ -908,7 +916,7 @@ function renderGeoMap(data,vc){
     'Sweden':{lat:62.0,lon:15.0,label:'Sweden'},'Singapore':{lat:1.35,lon:103.8,label:'Singapore'},
     'Germany':{lat:51.2,lon:10.4,label:'Germany'},'Canada':{lat:56.1,lon:-106.3,label:'Canada'},
     'Australia':{lat:-25.3,lon:133.8,label:'Australia'},'India':{lat:22.0,lon:79.0,label:'India'},
-    'China':{lat:35.0,lon:103.8,label:'China'},'Japan':{lat:36.5,lon:138.0,label:'Japan'}
+    'China':{lat:35.0,lon:103.8,label:'China'},'Japan':{lat:36.5,lon:138.0,label:'Japan'},'Italy':{lat:42.5,lon:12.5,label:'Italy'}
   };
   const companies=data.filter(r=>r['Geography']&&geo[r['Geography'].trim()]);
   const colors={'Precision Nutrition':'#e07535','Intelligent Health':'#2563eb','Food & Medicine':'#16a34a'};
@@ -951,7 +959,7 @@ function renderGeoMap(data,vc){
     <div class="vis-card-desc">Company HQs plotted on real geography. Bubble size = number of companies at that location (area-scaled, not linear); colour = dominant focus area there. Click a bubble or a chip below to open that company.${missing.length?' Not yet mapped: '+missing.join(', ')+' (add lat/lon in renderGeoMap).':''}</div>
     <div id="geo-inner" style="background:#1a7fc4;border-radius:7px;overflow:hidden;position:relative">
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
-        <image href="./worldmap.png" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
+        <image href="./worldmap.jpg" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>
         ${bubbles}
         <rect x="12" y="${H-96}" width="172" height="84" fill="white" opacity=".92" rx="6"/>
         <text x="24" y="${H-77}" font-size="9" font-weight="700" fill="#162535" style="text-transform:uppercase;letter-spacing:.04em">Dominant Focus</text>

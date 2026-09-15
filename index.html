@@ -106,6 +106,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
 .badge{display:inline-block;padding:2px 6px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
 .b-pn{background:#fce0cc;color:#a04000}.b-ih{background:#ddeaf4;color:#1d4d6e}.b-fm{background:var(--rose-light);color:var(--rose)}
 .b-startup{background:#e8f0fe;color:#1a56a0}.b-incumbent{background:var(--purple-light);color:var(--purple)}.b-acquirer{background:#fee8e8;color:#9a1a1a}
+.b-regulator{background:#fef3c7;color:#92400e}.b-distribution{background:#e0f2fe;color:#075985}.b-research{background:#ede9fe;color:#5b21b6}
 .b-priority{background:var(--green-light);color:var(--green)}.b-interested{background:#fce0cc;color:#a04000}.b-watch{background:#f0f4f8;color:#7a9ab0}
 .b-pedigree{background:#f0e8fe;color:#5a1a9a;font-size:9px}
 .sbar{display:flex;align-items:center;gap:4px}
@@ -250,11 +251,16 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
 .guide-card-body ul{margin:0 0 8px 18px}
 .guide-card-body li{margin-bottom:4px}
 .guide-card-body code{background:var(--slate);padding:1px 5px;border-radius:4px;font-size:10.5px;color:var(--navy3)}
-.score-tbl{width:100%;border-collapse:collapse;margin-top:6px}
+.score-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:6px}
+.score-tbl{width:100%;min-width:480px;border-collapse:collapse}
 .score-tbl th{background:var(--navy);color:var(--white);padding:7px 9px;font-size:10px;text-align:left;font-weight:500}
 .score-tbl td{padding:7px 9px;font-size:10.5px;border-bottom:1px solid var(--border);vertical-align:top}
 .score-tbl tr:last-child td{border-bottom:none}
 .score-name{font-weight:600;color:var(--ink);white-space:nowrap}
+.lvl-tbl{width:100%;border-collapse:collapse;margin-top:2px}
+.lvl-tbl td{padding:6px 9px;font-size:10.5px;border-bottom:1px solid var(--border);vertical-align:top}
+.lvl-tbl tr:last-child td{border-bottom:none}
+.lvl-num{font-family:'DM Serif Display',serif;font-size:14px;color:var(--orange);font-weight:400;width:24px;text-align:center;vertical-align:middle}
 .guide-note{background:var(--orange-pale);border:1px solid var(--orange);border-radius:7px;padding:10px 14px;font-size:10.5px;color:#7a3a10;margin-top:10px}
 </style>
 </head>
@@ -329,7 +335,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
       <select class="f-select" id="fFocus" onchange="applyFilters()"><option value="">All Focus Areas</option><option>Precision Nutrition</option><option>Intelligent Health</option><option>Food and Medicine</option></select>
       <select class="f-select" id="fStage" onchange="applyFilters()"><option value="">All Stages</option><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Public</option></select>
       <select class="f-select" id="fInterest" onchange="applyFilters()"><option value="">All Interest</option><option>Priority</option><option>Interested</option><option>Watch</option></select>
-      <select class="f-select" id="fType" onchange="applyFilters()"><option value="">All Types</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option></select>
+      <select class="f-select" id="fType" onchange="applyFilters()"><option value="">All Types</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option><option>Regulator</option><option>Distribution</option><option>Research Institution</option></select>
       <select class="f-select" id="fPedigree" onchange="applyFilters()"><option value="">All Pedigree</option><option>Repeat Founder</option><option>Ex-FAANG</option><option>PhD-Researcher</option><option>First-time</option><option>Mixed</option></select>
       <span class="f-count" id="fCount"></span>
     </div>
@@ -382,8 +388,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
   <div class="section-wrap" id="sec-visuals">
     <div class="page-hdr"><h1>Market Visuals</h1><p>Strategic views - download any visual as PNG for newsletters and reports</p></div>
     <div class="vis-selector">
-      <button class="vis-btn active" onclick="setVis('architecture',this)">Architecture</button>
-      <button class="vis-btn" onclick="setVis('ecosystem',this)">Ecosystem Map</button>
+      <button class="vis-btn active" onclick="setVis('ecosystem',this)">Ecosystem Map</button>
       <button class="vis-btn" onclick="setVis('whynow',this)">Why Now</button>
       <button class="vis-btn" onclick="setVis('valuechain',this)">Value Chain</button>
       <button class="vis-btn" onclick="setVis('classic',this)">VC Grid</button>
@@ -404,6 +409,11 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
     <div class="page-hdr"><h1>Platform Guide</h1><p>What each page does, how the data flows, and how the TMG scores are built</p></div>
     <div class="guide-wrap">
       <div class="guide-intro">This platform tracks the Consumer Healthspan competitive landscape (Precision Nutrition, Intelligent Health, Food &amp; Medicine) for The March Group. Company records live in a shared Firebase database and sync from a Google Sheet; the pages below are different views and tools built on top of that same dataset. Click any question to expand it.</div>
+
+      <div class="guide-section">
+        <div class="guide-section-hdr">How data flows into the platform</div>
+        <div id="guideArch"></div>
+      </div>
 
       <div class="guide-section">
         <div class="guide-section-hdr">Pages &amp; Functions</div>
@@ -432,7 +442,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
         <details class="guide-card"><summary>Visuals</summary><div class="guide-card-body">
           <p>Fifteen chart/map views of the same dataset, each downloadable as a PNG for decks or newsletters. Quick reference:</p>
           <ul>
-            <li><strong>Architecture, Value Chain, Why Now</strong> - narrative/structural diagrams of the market.</li>
+            <li><strong>Value Chain, Why Now</strong> - narrative/structural diagrams of the market.</li>
             <li><strong>Ecosystem Map</strong> - concentric-ring view: focus areas in the middle, companies grouped around them by sector, colour-coded by focus area with the ring colour showing ecosystem role (Ingredient/Science, Platform, Brand, Distribution).</li>
             <li><strong>VC Grid, Tile Landscape, Classic</strong> - companies grouped into a scannable grid or tiles by focus area and stage.</li>
             <li><strong>2x2 Matrix, Bubble Chart, Radar</strong> - plot any two (or more) TMG scores against each other to compare companies quantitatively.</li>
@@ -460,7 +470,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
         <div class="guide-section-hdr">How the TMG Scores are built</div>
         <div class="guide-card" style="padding:12px 16px 16px">
           <p style="font-size:11.5px;color:var(--ink-soft);margin-bottom:8px">Every company can carry nine 1-5 scores plus an overall interest level. Scores are meant to reflect <strong>evidence actually found</strong> about a company (traction numbers, press, study/clinical language, technology claims, pricing structure) - a blank score means no real signal was found, not a zero.</p>
-          <table class="score-tbl">
+          <div class="score-tbl-wrap"><table class="score-tbl">
             <thead><tr><th>Score (1-5)</th><th>What it's judging</th></tr></thead>
             <tbody>
               <tr><td class="score-name">Market Traction</td><td>Evidence of real customer/user adoption - customer counts, revenue signals, press coverage of growth.</td></tr>
@@ -474,9 +484,118 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
               <tr><td class="score-name">Scalability</td><td>How easily the business model scales without proportional cost increase.</td></tr>
               <tr><td class="score-name">TMG Interest Level</td><td>Overall team call - Priority / Interested / Watch - not an average of the scores above, it's a separate judgment call.</td></tr>
             </tbody>
-          </table>
-          <div class="guide-note">This table is a working summary for quick reference inside the platform. The source of truth for exact scoring definitions and edge cases is the <strong>Meta tab of the team Google Sheet</strong> - check there (and keep it updated) if a score's meaning is ambiguous or this summary looks out of date.</div>
+          </table></div>
+          <div class="guide-note">Below: the full 1-5 breakdown for each score. Click one to expand.</div>
         </div>
+
+        <details class="guide-card"><summary>1. Market Traction</summary><div class="guide-card-body">
+          <p>Evidence of real customer/user adoption found for the company - not potential market size, actual documented uptake.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>No evidence of any customers or users - pre-launch, or nothing public found.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Early/anecdotal only - a handful of pilot users or beta customers, no clear growth signal.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Some real traction reported - specific user counts or modest revenue mentioned, but scale/growth rate unclear.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Strong, clearly documented traction - meaningful customer base, revenue growth, or notable retention/engagement reported.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Exceptional, well-documented traction - large or rapidly growing customer base, strong revenue/usage widely reported in press.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>2. Product Differentiation</summary><div class="guide-card-body">
+          <p>How distinct the product or approach is from competitors - not "is it good," but "is it actually different."</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>Generic / me-too - no differentiation found versus existing competitors.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Minor differentiation - a small feature or positioning tweak, not fundamentally different.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Clear differentiation claimed - a distinct method or angle, though not independently verified.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Strong, credible differentiation - proprietary technology or approach with some supporting evidence.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Category-defining - a unique, hard-to-replicate proprietary method, well-substantiated by evidence or IP.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>3. Capital Efficiency</summary><div class="guide-card-body">
+          <p>How much traction/output the company has produced relative to the capital it has raised.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>Very inefficient - large capital raised relative to demonstrated output, or burn appears high with little to show.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Below average - some output, but capital raised seems disproportionate to it.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Reasonable - traction is roughly proportionate to capital raised.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Strong - notable output or traction achieved on relatively lean capital.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Exceptional - outsized results for very little capital raised, or largely bootstrapped.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>4. Clinical Validation</summary><div class="guide-card-body">
+          <p>Evidence of clinical trials, published studies, or scientific rigor behind the company's health claims.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>No clinical or scientific evidence found for any health claims made.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Anecdotal/testimonial evidence only - no formal studies referenced.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Some scientific backing - references studies or scientific advisors, not necessarily original peer-reviewed research.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Solid evidence - published studies, an active/completed clinical trial, or a named research partnership.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Rigorous validation - peer-reviewed publications and/or completed trials at a regulatory-grade level of evidence.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>5. AI Actionability</summary><div class="guide-card-body">
+          <p>How central AI/ML actually is to the product's value - not whether "AI" appears on the website.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>No real AI/ML use found - term absent, or used purely as marketing language.</td></tr>
+            <tr><td class="lvl-num">2</td><td>AI mentioned but peripheral - not core to how the product actually works.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Meaningful supporting role - AI used for some analysis or personalization, but not the core product.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Central to the product - the core value proposition depends on the AI/ML capability.</td></tr>
+            <tr><td class="lvl-num">5</td><td>The defining moat - sophisticated, proprietary AI/ML is the main differentiator and hard to replicate.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>6. Regulatory Complexity</summary><div class="guide-card-body">
+          <p>Degree of regulatory hurdle or risk the business faces. <strong>Note the direction:</strong> unlike the other scores, a higher number here means more risk/friction, not a better outcome - read it alongside the others, not as "5 is best."</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>Minimal exposure - operates in a largely unregulated category.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Low complexity - some compliance requirements (e.g. labeling) but no approval pathway to clear.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Moderate - meaningful regulatory scrutiny (e.g. supplement/health-claim rules) but no premarket approval required.</td></tr>
+            <tr><td class="lvl-num">4</td><td>High - faces a substantial regulatory pathway (e.g. FDA clearance or certification process).</td></tr>
+            <tr><td class="lvl-num">5</td><td>Very high - full regulatory approval required (e.g. FDA drug/device approval), a long and costly pathway.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>7. Personalization Depth</summary><div class="guide-card-body">
+          <p>How individualized the product experience actually is, versus one-size-fits-all.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>None - one-size-fits-all, no individualized elements.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Minimal - basic segmentation only (e.g. by age or gender).</td></tr>
+            <tr><td class="lvl-num">3</td><td>Moderate - tailored recommendations based on some user input or self-reported data.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Deep - continuously adapts based on rich individual data (e.g. biomarkers, ongoing behavior).</td></tr>
+            <tr><td class="lvl-num">5</td><td>Fully individualized - sophisticated, dynamic personalization unique to each user, hard to replicate generically.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>8. Data Moat</summary><div class="guide-card-body">
+          <p>Strength of any proprietary data advantage that competitors can't easily replicate.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>No proprietary data - relies entirely on third-party or generic data.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Minimal - collects some user data, but it's not clearly differentiated or defensible.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Moderate - accumulating a useful proprietary dataset, but the moat is still forming.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Strong - a substantial proprietary dataset that improves the product and is hard for competitors to replicate.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Exceptional - a unique, large-scale proprietary dataset creating a compounding competitive advantage.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>9. Scalability</summary><div class="guide-card-body">
+          <p>How easily the business model scales without a proportional increase in cost.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num">1</td><td>Difficult to scale - highly manual/service-heavy model, cost grows roughly linearly with growth.</td></tr>
+            <tr><td class="lvl-num">2</td><td>Limited - some operational leverage, but still resource-intensive to grow.</td></tr>
+            <tr><td class="lvl-num">3</td><td>Moderate - a mix of scalable (software) and non-scalable (service/logistics) components.</td></tr>
+            <tr><td class="lvl-num">4</td><td>Strong - mostly software/product-driven, marginal cost of growth is low.</td></tr>
+            <tr><td class="lvl-num">5</td><td>Highly scalable - a pure software/platform model, minimal marginal cost, scales with ease.</td></tr>
+          </table>
+        </div></details>
+
+        <details class="guide-card"><summary>TMG Interest Level (Priority / Interested / Watch)</summary><div class="guide-card-body">
+          <p>The overall team call on a company - a separate judgment, not a mechanical average of the nine scores above. Two companies with similar scores can land in different tiers based on thesis fit, timing, or a qualitative read the scores don't capture.</p>
+          <table class="lvl-tbl">
+            <tr><td class="lvl-num" style="font-family:inherit;font-size:10.5px;font-weight:700;color:var(--ink)">Priority</td><td>Top-tier fit - TMG should actively pursue engagement (a call or meeting) soon.</td></tr>
+            <tr><td class="lvl-num" style="font-family:inherit;font-size:10.5px;font-weight:700;color:var(--ink)">Interested</td><td>Worth tracking closely and re-evaluating as new information emerges - not an immediate priority.</td></tr>
+            <tr><td class="lvl-num" style="font-family:inherit;font-size:10.5px;font-weight:700;color:var(--ink)">Watch</td><td>Relevant landscape context (Incumbents, Acquirers, Regulators, Distribution, Research Institutions) but not currently an active investment target.</td></tr>
+          </table>
+        </div></details>
+        <div class="guide-note">This is a working rubric for quick reference inside the platform. The source of truth for exact scoring definitions and edge cases is the <strong>Meta tab of the team Google Sheet</strong> - check there (and keep it updated) if a score's meaning is ambiguous or this summary looks out of date.</div>
       </div>
 
       <div class="guide-section">
@@ -521,7 +640,7 @@ td{padding:8px 11px;font-size:11px;vertical-align:middle;white-space:nowrap;over
         <div class="form-field"><label>Healthspan Target</label><select id="f_health"><option value="">-</option><option>Metabolic Control</option><option>Gut Health</option><option>Cardiovascular Health</option><option>Neurological Health</option><option>Inflammation</option><option>Musculoskeletal</option><option>Multiple</option></select></div>
         <div class="form-field"><label>Ecosystem Position</label><select id="f_eco"><option value="">-</option><option>Ingredient / Science</option><option>Platform</option><option>Brand</option><option>Distribution / Channel</option></select></div>
         <div class="form-field"><label>Business Model</label><select id="f_biz"><option value="">-</option><option>B2C</option><option>B2B</option><option>B2B2C</option><option>Marketplace</option><option>SaaS</option></select></div>
-        <div class="form-field"><label>Company Type</label><select id="f_type"><option value="">-</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option></select></div>
+        <div class="form-field"><label>Company Type</label><select id="f_type"><option value="">-</option><option>Startup</option><option>Incumbent</option><option>Acquirer</option><option>Regulator</option><option>Distribution</option><option>Research Institution</option></select></div>
         <div class="form-section-title">Financials and Team</div>
         <div class="form-field"><label>Geography</label><input id="f_geo" type="text"></div>
         <div class="form-field"><label>Stage</label><select id="f_stage"><option value="">-</option><option>Pre-seed</option><option>Seed</option><option>Series A</option><option>Series B</option><option>Public</option></select></div>
