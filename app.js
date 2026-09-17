@@ -417,7 +417,7 @@ function exportCSV(){
   const NL=String.fromCharCode(13,10);const q='"';
   const esc=v=>{v=(v==null?'':v).toString();return /[",\r\n]/.test(v)?(q+v.replace(/"/g,q+q)+q):v;};
   const rows=allData.map(r=>cols.map(c=>esc(r[c])).join(','));
-  const csv='\uFEFF'+[cols.map(esc).join(',')].concat(rows).join(NL);
+  const csv='\uFEFFsep=,'+NL+[cols.map(esc).join(',')].concat(rows).join(NL);
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='TMG_Landscape_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
