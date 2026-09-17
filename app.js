@@ -1163,7 +1163,7 @@ async function callAI(prompt){
   if(provider==='gemini'){
     const key=localStorage.getItem('tmg_geminiKey')||document.getElementById('apiKeyInput')?.value.trim();
     if(!key)return'Add your Gemini API key in Settings. Free at aistudio.google.com/app/apikey';
-    const MODELS=['gemini-1.5-flash-8b','gemini-1.5-flash'];
+    const MODELS=['gemini-3-flash-preview'];
     let lastErr='';
     for(const m of MODELS){
       try{
